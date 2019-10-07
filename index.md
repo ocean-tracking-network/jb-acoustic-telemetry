@@ -7,12 +7,4 @@ JB Acoustic Telemetry (WIP)
 
 <!-- this is an html comment -->
 
-{% comment %} This is a comment in Liquid {% endcomment %}
-
-> ## Prerequisites
->
-> FIXME
-> FIXME
-{: .prereq}
-
 {% include links.md %}
