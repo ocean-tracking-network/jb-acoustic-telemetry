@@ -1,0 +1,1381 @@
+# Acoustic Telemetry data analysis
+# by Jake Brownscombe
+
+# The purpose of this workshop is to provide an introduction to analyzing aquatic acoustic telemetry data analysis in R.
+# We will cover the basic steps and considerations for analyzing this type of data, and explore some key tools
+# for data manipulation, combination, visualization, calculating movement and space use metrics, and data filtering.
+
+# the data we're working with are from permit (Trachinotus falcatus) in south Florida. These data belong to Jake Brownscombe,
+# and all fish info and locations have been altered slightly so the data are all inaccurate. Regardless, please do not
+# share these data with anyone outside of this workshop without my consent. If it fell into the wrong hands,
+# civilization as we know it might crumble. Peace and love. Peace and love.
+
+
+#install some packages *if you don't already have them*
+#there's a chance you could run into issues loading these packages and have to do some troubleshooting
+
+install.packages('ggplot2')
+install.packages('ggmap')
+install.packages('dplyr')
+install.packages('geosphere')
+install.packages('rgdal')
+install.packages('raster')
+install.packages('mapdata')
+install.packages('maptools')
+install.packages('geosphere')
+install.packages('igraph')
+install.packages('viridis')
+install.packages("data.table")
+install.packages("sf")
+install.packages('gganimate')
+install.packages("rnaturalearth")
+install.packages("beepr")
+install.packages("gifski")
+install.packages("devtools")
+install.packages("plotly")
+install.packages('lunar')
+install.packages("httr", dependencies = TRUE)
+install.packages("ncdf4",dependencies = TRUE)
+install.packages("sp", dependencies = TRUE)
+install.packages("devtools")
+devtools::install_github("rmendels/xtractomatic")
+devtools::install_github("rossdwyer/VTrack")
+install.packages('remotes')
+library(remotes)
+install_url("https://gitlab.oceantrack.org/GreatLakes/glatos/repository/master/archive.zip",
+            build_opts = c("--no-resave-data", "--no-manual"))
+install.packages("here")
+
+
+# #set working directory. You will need to change these details based on where you have stored the data
+# setwd("~/Desktop/workshops/Acoustic telemetry workshop Dal 2019/data")
+#
+
+# load data. Notice the four # at the end of this line. ####
+# This enables collapsing blocks of code using the drop arrow on the left
+
+#Acoustic telemetry data are commonly stored in 4 different files:
+#1. detections
+#2. Receiver deployment information
+#3. Receiver metadata
+#4. Tagging information
+
+library(here) # this library helps this code find its co-located data files.
+setwd(here("data"))
+
+dets <- read.csv("detections.csv") #detections from acoustic receivers
+Rxdeploy <- read.csv("Rx_deployments.csv") #receiver station info
+Rxmeta <- read.csv("Rx_metadata.csv") #receiver station info
+tags <- read.csv("tag_info.csv") #tagged fish data
+
+
+#check out the data (these are all data frames by default):
+head(dets)
+tail(dets)
+str(dets)
+dets[1:10,]
+
+head(Rxdeploy)
+head(Rxmeta)
+head(tags)
+
+
+
+# notice the variables and their data type (important - google data types in R if unfamiliar)
+
+# clearly we need to combine the above 4 dataframes in various ways to do anything with these data
+# let's grease the wheels and check out fish tagging and receiver locations:
+
+# I like to use google maps to plot on for basic visualization. Google recently made it a little trickier to do this
+# because you have to go online and register a 'project' with them to get an API code. So this code will not work for
+# you unless you do that and get your API code that goes beside 'key' below.
+
+library(ggmap)
+
+# register_google(key = "")
+FLmap <- get_googlemap(center = c(lon=-81.7, lat=24.8),
+                        zoom = 8, size = c(640, 640), scale = 4,
+                        maptype = c("satellite"))
+
+
+#just load in the map from a workspace I provided (you need to change this to your working directory info)
+load("~/Desktop/workshops/Acoustic telemetry workshop Dal 2019/Acoustic telemetry workshop workspace.RData")
+
+ggmap(FLmap, extent='normal')+
+  scale_x_continuous(limits=c(-82.6, -80.1))+
+  scale_y_continuous(limits=c(24.2, 25.5))+
+  ylab("Latitude") +
+  xlab("Longitude")+
+  geom_point(data=Rxmeta, aes(x=lon,y=lat), col="red",size=2)+
+  geom_point(data=tags,aes(x=lon,y=lat), col="yellow", size=1)
+
+
+
+#In order to use dets in a meaningful way, we'll need to assign station deployments, metadata, and fish tagging
+#info to them.
+
+
+
+# assign permit tag info to the detections ####
+
+str(dets)
+str(tags)
+
+#let's assign FishID, tagging date (datetime), and fork length (FLmm) to detections.
+#but first, we'll deal with dates really quickly:
+
+#date/times need to be converted to a POSIXct object to be manipulated and plotted:
+tags$datetimeESTEDT <- as.POSIXct(tags$datetime, tz="EST5EDT", format="%d-%m-%Y %H:%M")
+str(tags)
+
+#convert to UTC time:
+tags$datetimeUTC <- as.POSIXct(strftime(tags$datetimeESTEDT, tz="UTC", format="%Y-%m-%d %H:%M:%S"))
+head(tags)
+
+
+
+#now we can assign above variables from tags to dets using the merge function:
+?merge
+dets2 <- merge(dets, tags, by="Transmitter", all.x=TRUE)
+head(dets2)
+# now we would have to clean this dataset up quite a bit.
+
+# another option is to use match:
+dets$FishID <- tags$FishID[match(dets$Transmitter, tags$Transmitter)]
+dets$FLmm <- tags$FLmm[match(dets$Transmitter, tags$Transmitter)]
+dets$Tagdate <- tags$datetimeUTC[match(dets$Transmitter, tags$Transmitter)]
+anyNA(dets$FishID)
+head(dets)
+
+
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# assign station info to detections ####
+
+# first thing we need to do is figure out which station each receiver was at based on it's serial number
+# documented in Rxdeploy:
+head(Rxdeploy)
+
+# we have deployment and recovery datetimes, which need to be posix. Also need to combine the
+# receiver model and serial number to match into detections:
+
+#Receiver number:
+Rxdeploy$Receiver <- paste(Rxdeploy$INS_MODEL_NO, Rxdeploy$INS_SERIAL_NO, sep="-")
+head(Rxdeploy)
+
+#datetimes:
+Rxdeploy$deployESTEDT <- as.POSIXct(Rxdeploy$DEPLOY_DATE_TIME....yyyy.mm.ddThh.mm.ss.,
+                                    tz="EST5EDT", format="%Y-%m-%dT%H:%M:%S")
+Rxdeploy$recoverESTEDT <- as.POSIXct(Rxdeploy$RECOVER_DATE_TIME..yyyy.mm.ddThh.mm.ss.,
+                                    tz="EST5EDT", format="%Y-%m-%dT%H:%M:%S")
+
+#convert to UTC:
+Rxdeploy$deployUTC <- strftime(Rxdeploy$deployESTEDT, tz="UTC", format="%Y-%m-%d %H:%M:%S")
+Rxdeploy$deployUTC <- as.POSIXct(Rxdeploy$deployUTC, tz="UTC", format="%Y-%m-%d %H:%M:%S")
+Rxdeploy$recoverUTC <- strftime(Rxdeploy$recoverESTEDT, tz="UTC", format="%Y-%m-%d %H:%M:%S")
+Rxdeploy$recoverUTC <- as.POSIXct(Rxdeploy$recoverUTC, tz="UTC", format="%Y-%m-%d %H:%M:%S")
+
+head(Rxdeploy)
+# lets clean this dataframe up with dplyr:
+
+library(dplyr)
+Rxdeploy2 <- Rxdeploy %>% select(station=STATION_NO, Receiver, deployUTC, Recovered=RECOVERED..y.n.l., recoverUTC,
+                                 Downloaded=DATA_DOWNLOADED..y.n.,lat=DEPLOY_LAT, lon=DEPLOY_LONG, depth=BOTTOM_DEPTH)
+head(Rxdeploy2)
+#much better. We need to assign the station number to detections based on Receiver number and the time it was there.
+#this is a complicated data problem...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#We'll have to generate a new hourly datetime object and
+#cross assign to detections based on Receiver and hour.
+
+
+head(dets)
+
+#remove Station.Name, Latitude, Longitude can't be trusted
+dets <- dets %>% select(-Station.Name, -Latitude, -Longitude)
+
+#need to convert datetime to posix:
+dets$UTC <- as.POSIXct(dets$Date.and.Time..UTC., tz="UTC", format="%Y-%m-%d %H:%M:%S")
+
+
+# use strftime to do generate an hour object:
+dets$hour <- strftime(dets$UTC, tz="UTC", format="%Y-%m-%d %H")
+str(dets)
+dets$hour <- as.POSIXct(dets$hour, tz="UTC", format="%Y-%m-%d %H")
+dets$day <- strftime(dets$UTC, tz="UTC", format="%Y-%m-%d")
+dets$day <- as.POSIXct(dets$day, tz="UTC", format="%Y-%m-%d")
+
+head(dets)
+
+
+#det has all Receiver SN (character) and hour (posix). do the same with Rxdeploy2:
+head(Rxdeploy2)
+
+Rxdeploy2$deployUTChour <- strftime(Rxdeploy2$deployUTC, tz="UTC", format="%Y-%m-%d %H")
+Rxdeploy2$deployUTChour <- as.POSIXct(Rxdeploy2$deployUTChour, tz="UTC", format="%Y-%m-%d %H")
+
+Rxdeploy2$recoverUTChour <- strftime(Rxdeploy2$recoverUTC, tz="UTC", format="%Y-%m-%d %H")
+Rxdeploy2$recoverUTChour <- as.POSIXct(Rxdeploy2$recoverUTChour, tz="UTC", format="%Y-%m-%d %H")
+
+head(Rxdeploy2)
+str(Rxdeploy2)
+
+#Rxdeploy2 has deployUTChour (posix), recoverUTChour (posix) and Receiver (character)
+
+
+
+
+#matching times is tricky because we don't have all the study hours in station that are in det. To avoid using
+# for loops to check through the dates (very slow) we'll generate an hourly time dataset for the station info:
+
+#reduce Rxdeploy2 down to those that were recovered:
+head(Rxdeploy3)
+Rxdeploy3 <- Rxdeploy2 %>% filter(Downloaded=="y")
+
+#make a time variable for whole study period:
+DT <- data.frame(hour=seq(from=min(Rxdeploy3$deployUTChour), to=max(Rxdeploy3$recoverUTChour), by="hour"))
+str(DT)
+DT[1,]
+
+#combine times with station info:
+DT2 <- merge(DT, Rxdeploy3, all=TRUE)
+head(DT2)
+
+#reduce down to just hours between deployment and recovery:
+DT3 <- DT2 %>% filter(hour>=deployUTC & hour<=recoverUTC)
+head(DT3)
+rm(DT2) #removes object from R environment
+
+#summarise for fun:
+DT3sum <- DT3 %>% group_by(Receiver,deployUTChour) %>% summarise(Recoverhour=mean(recoverUTChour), count=length(hour)) %>% ungroup()
+DT3sum #notice this is a tibble
+
+#now join det with DT3 matching SN and hour
+head(dets)
+dets2 <- merge(dets, DT3, all.x=TRUE,by=c("hour","Receiver"))
+head(dets2)
+
+
+#any detections occuring oustide of deployment periods?
+anyNA(dets2$station)
+#Chances are the first time there will be, could just be from being around transmitters or tx receivers outside the water
+#check them out to see if there's issues:
+issues <- dets2 %>% filter(is.na(dets2$station))
+
+
+#remove NAs in station (ie detections that theortically occured outside of deployment periods). Also remove some excessive deployment info:
+dets2 <- dets2 %>% filter(!is.na(station)) %>% select(-X, -Recovered, -Downloaded, -Date.and.Time..UTC.,-Transmitter.Name,
+                          -Transmitter.Serial,-recoverUTC, -deployUTChour, -recoverUTChour,
+                          -deployUTC, -recoverUTC, -Recovered)
+head(dets2)
+
+
+#assign some more station metadata:
+head(Rxmeta)
+
+dets3 <- merge(dets2, Rxmeta, all.x=TRUE, by=c("station"))
+head(dets3)
+dets3 <- dets3 %>% select(-X,-lat.y, -lon.y, -depth.y, lat=lat.x, lon=lon.x, depth=depth.x)
+head(dets3)
+
+
+
+
+
+
+
+
+
+
+
+
+# summarise and plot data: ####
+str(dets3)
+
+#Summarise by FishID:
+
+FishIDsum <- dets3 %>% group_by(FishID) %>%
+  summarise(dets=length(FishID),stations=length(unique(Receiver)), nodes=length(unique(node)),
+            min=min(UTC), max=max(UTC), tracklength=max(UTC)-min(UTC)) %>% as.data.frame()
+FishIDsum
+
+#Summarise by station:
+
+#need a list of all stations:
+head(Rxmeta)
+stations <- Rxmeta %>% select(station, lat, lon, depth, sub=sub_detail, hab=hab_detail)
+head(stations)
+
+#summarise detections:
+
+stationsum <- dets3 %>% group_by(station) %>%
+  summarise(detections=length(FishID),
+            uniqueID=length(unique(FishID)), det_days=length(unique(as.character(day)))) %>% as.data.frame()
+
+#merge with station list:
+stations2 <- merge(stations, stationsum, all.x=TRUE, by="station")
+stations2[is.na(stations2)]<-0
+stations2[1:10,]
+
+
+#figure out number of days Rxs were in the water:
+head(Rxdeploy3)
+Rxdeploy3$deploy_time <- Rxdeploy3$recoverUTC-Rxdeploy3$deployUTC
+Rxdeploysum <- Rxdeploy3 %>% group_by(station) %>% summarise(deploy_time=sum(deploy_time))
+stations2$Rx_deploy_time <- Rxdeploysum$deploy_time[match(stations2$station, Rxdeploysum$station)]
+head(stations2)
+
+#Receiver efficiency index from Ellis et al. (2019) Fisheries Research
+stations2$REI <- (stations2$uniqueID/length(unique(dets3$Transmitter))) * (stations2$det_days/sum(stations2$det_days)) *
+                 (max(stations2$det_days)/stations2$det_days)
+
+stations2$REI[is.na(stations2$REI)]<-0
+stations2$REI <- stations2$REI/max(stations2$REI)*100
+
+#summary table:
+stations2[1:20,]
+
+
+
+
+
+
+#abacus plot:
+
+#need to summarise by day to make less computationally intensive:
+head(dets3)
+dets3day <- dets3 %>% group_by(node, day, FishID) %>% summarise(dets=length(FishID))
+head(dets3day)
+
+#plot
+library(ggplot2)
+?ggplot()
+ggplot(data=dets3day, aes(x=day, y=FishID, col=node))+geom_point()
+
+#add tagging datetimes:
+head(tags)
+ggplot(data=dets3day, aes(x=day, y=FishID, col=node))+geom_point()+
+  geom_point(data=tags, aes(x=datetimeESTEDT,y=FishID),col="black")
+
+
+
+#make some spatial plots:
+
+#examine by station and FishID:
+stationFishID <- dets3 %>% group_by(station, FishID) %>%
+  summarise(lat=mean(lat), lon=mean(lon), dets=length(FishID), logdets=log(length(FishID)))
+head(stationFishID)
+
+perm_map <- ggmap(FLmap, extent='normal')+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+  ylab("Latitude") +
+  xlab("Longitude")+
+  labs(size="log(detections)")+
+  geom_path(data=dets3, aes(x=lon,y=lat,col=FishID))+
+  geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=FishID))
+perm_map
+
+# can simply save plots using output window, or to save high res plots:
+tiff("Keys_permit_map.tiff", units="in", width=15, height=8, res=300)
+perm_map
+dev.off()
+
+
+
+#let's look at maps by FishID to see indiviudal fish movement patterns.
+# this might melt your computer.
+
+ggmap(FLmap, extent='normal')+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+  ylab("Latitude") +
+  xlab("Longitude")+
+  labs(size="log(detections)")+
+  geom_path(data=dets3, aes(x=lon,y=lat,col=FishID))+
+  geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=FishID))+
+  facet_wrap(~FishID)
+
+
+
+# Add the tagging locations into this. In order to generate a movement path from
+# the tagging location we'll have to bind the tagging locations and detections data sets together
+
+#set up dataframes with same variables to combine:
+head(dets3)
+head(tags)
+
+#set up detections for combination
+dets4 <- dets3 %>% select(Receiver, Transmitter, FishID, FLmm, UTC, Tagdate, station, lat, lon)
+dets4$tagloc <-"n"
+
+
+#tag locations
+tags2 <- tags
+tags2$tagloc <-"y"
+tags2$Receiver <-""
+tags2$station <-""
+tags2$Tagdate <- tags2$datetimeUTC
+tags2$UTC <- tags2$datetimeUTC
+
+tags2 <- tags2 %>% select(Receiver,Transmitter, FishID, FLmm, UTC, Tagdate, station, lat, lon, tagloc)
+
+#all good?
+head(tags2)
+head(dets4)
+
+#bind them together
+dets5 <- rbind(tags2, dets4)
+#arrange by fishID and time
+dets5 <- dets5 %>% arrange(FishID, UTC)
+head(dets5)
+
+
+#plot
+
+ggmap(FLmap, extent='normal')+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+  ylab("Latitude") +
+  xlab("Longitude")+
+  labs(size="log(detections)")+
+  geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=FishID))+
+  geom_path(data=dets5, aes(x=lon,y=lat,col=FishID))+
+  geom_point(data=tags, aes(x=lon, y=lat),col="yellow")+
+  facet_wrap(~FishID)
+
+
+
+
+#interactive map using plotly
+#plotly seems to have issues with ggmap with projections of data onto the satellite image. Let's just use base land layer:
+
+head(stations2)
+
+lon_range <- range(stationFishID$lon) + c(-10, 10)
+lat_range <- range(stationFishID$lat) + c(-10, 10)
+
+library(mapdata)
+w <- map_data("worldHires", ylim = lat_range, xlim = lon_range)
+
+library(plotly)
+
+p <-  ggplot(stations2) +
+  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkgreen") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  #geom_sf(data = area, fill = 'white') +
+  geom_point(data=stations2, aes(lon, lat, size=detections, col=REI))+
+  scale_color_continuous(low="yellow", high="red")+
+  coord_sf(xlim = c(-82.5, -81), ylim = c(24.2, 25.1)) +
+  xlab("Longitude")+ ylab("Latitude")+
+  theme(panel.background = element_rect(fill = 'lightblue'),
+        legend.position = 'none')
+
+ggplotly(p)
+
+
+
+
+
+
+# animations using gganimate ####
+
+library(sf)
+library(gganimate)
+library(rnaturalearth)
+library(gifski)
+
+str(dets3)
+dets3$year <- strftime(dets3$UTC, format="%Y")
+dets3$month <- strftime(dets3$UTC, format="%Y-%m")
+
+P201819 <- dets3 %>% filter(year>"2017")
+
+
+
+# Plot and animate
+p <- ggplot(P201819) +
+  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkgreen") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  #geom_sf(data = area, fill = 'white') +
+  geom_point(data=P201819, aes(lon, lat, col = FishID), size = 2) +
+  coord_sf(xlim = c(-82.5, -81), ylim = c(24.2, 25.1)) +
+  labs(title = '',
+       subtitle = 'Date: {format(frame_time, "%b %Y")}',
+       x = "Longitude", y = "Latitude") +
+  theme(panel.background = element_rect(fill = 'white'),
+        legend.position = 'none')+
+  transition_time(day)+
+  shadow_wake(wake_length = 0.5, alpha = FALSE)
+
+pAnim <- animate(p, duration=24, nframes=96)
+#watch it:
+pAnim
+#save it:
+anim_save("pAnim.gif")
+
+
+
+
+
+
+
+# data filtering and calculating movement metrics ####
+
+#There's a few different functions in the 'functions.R' worksheet located in the working directory:
+source("functions.R")
+
+
+#MoveInfo calculates distance, timediff and speed between detections.
+#needs: lat,lon, datetime (posix object), Transmitter. Data also has to be sorted by Transmitter and datetime
+head(dets3)
+dets3$datetime <- dets3$UTC
+dets3 <- dets3 %>% arrange(FishID, datetime)
+
+MoveInfo(dets3)
+
+
+# apply detection filters with DetFilter: ####
+
+#DetFilter is a custom function that applies 4 different filters to identify potentially
+# false and duplicate detections in the data.
+# Four different filters are generated as new columns in the dataset, identifying:
+# 1. detections that occured before the tag was deployed (Pre_tag_filter) if Tagdate is available in dataset
+# 2. Duplicate detections that occured within a time period less than the min tag delay (Min_tag_delay_filter)
+# 3. Duplicate detections that occured within a time period less than the min tag delay at distances longer
+#    than a specified value (mindist) (Min_tag_delay_distance_filter)
+# 4. Duplicate detections that occured within a time period less than the min tag delay at
+#    the same receiver (Min_tag_delay_receiver_filter)
+# 3. Detections that would indicate movements faster than realistic movement speeds (Speed_time_filter)
+# 4. Singular detections within a time frame specified (mindelay) (min_lag_filter)
+
+# The data frame must have datetime, Receiver, Transmitter, and
+# MoveInfo output metrics: timediff(seconds), dist(meters), speed(m/s)
+
+# User defines tf (maximum time between detections for min_lag_filter), mindelay (min tag delay, default=60),
+# mindist (min distance between receivers where fish may move quickly between due to detection ranges. default=2000),
+# maxspeed (maximum sustained swimming speed. defaults to 1 m/s)
+
+library(data.table)
+dets6 <- DetFilter(MoveInfodf, tf=7200, mindelay=60, mindist=2000, maxspeed=3)
+head(dets6)
+
+
+# your choice on which to remove. I'll remove them all as a conservative case:
+
+detsf <- dets6 %>% filter(Min_tag_delay_receiver_filter==1 & Speed_time_filter==1 & min_lag_filter==1 &
+                          Pre_tag_filter==1 & Min_tag_delay_filter==1 & Min_tag_delay_distance_filter==1)
+head(detsf)
+
+#check out what you're losing:
+Filteredout <- dets6 %>% filter(Min_tag_delay_receiver_filter==0 | Speed_time_filter==0 | min_lag_filter==0 |
+                                  Pre_tag_filter==0 | Min_tag_delay_filter==0 | Min_tag_delay_distance_filter==0)
+
+
+
+
+
+# have a quick look at movement distances over time
+
+#at this point we should probably convert UTC over to local time (EST/EDT)
+head(detsf)
+detsf$ESTEDT <- strftime(detsf$UTC, tz="EST5EDT", format="%Y-%m-%d %H:%M:%S")
+detsf$ESTEDT <- as.POSIXct(detsf$ESTEDT, tz="EST5EDT", format="%Y-%m-%d %H:%M:%S")
+
+#create a month variable:
+detsf$month <- strftime(detsf$ESTEDT, tz="EST5EDT", format="%B")
+
+#summarise by month:
+Monthdets <- detsf %>% group_by(month) %>% summarise(det=length(ESTEDT), dist=mean(dist)) %>% as.data.frame()
+head(Monthdets)
+
+Monthdets$month <- factor(Monthdets$month, levels=c("January","February","March","April","May","June","July","August","September","October","November","December"))
+ggplot(Monthdets, aes(x=month, y=det))+geom_histogram(stat="identity")
+ggplot(Monthdets, aes(x=month, y=dist))+geom_histogram(stat="identity")
+
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# assign some relevant environmental variables to the dataset:  ####
+#some available information includes diel period, season, lunar phase, temperature:
+
+#Diel period:
+library(maptools)
+Keysloc = matrix(c(-81.52208, 24.6565), nrow=1)
+KeysSP <- SpatialPoints(Keysloc, proj4string=CRS("+proj=longlat +datum=WGS84"))
+
+dawn = crepuscule(KeysSP, detsf$ESTEDT, solarDep=0, direction="dawn", POSIXct.out=TRUE)
+detsf$dawn = dawn$time
+dusk = crepuscule(KeysSP, detsf$ESTEDT, solarDep=0, direction="dusk", POSIXct.out=TRUE)
+detsf$dusk = dusk$time
+
+detsf$Diel = ifelse(detsf$ESTEDT < detsf$dawn, "Night",
+                    ifelse(detsf$ESTEDT < detsf$dusk, "Day","Night"))
+head(detsf)
+
+
+
+
+
+#season:
+
+#this is a weird hack of mine. Gotta be a better way
+#break down to just month and day
+detsf$moday <- strftime(detsf$ESTEDT, tz="EST5EDT", format="%m-%d")
+#convert back to posix, which will assume it's all in the current year:
+detsf$moday <- as.POSIXct(detsf$moday, tz="EST5EDT", format="%m-%d")
+#assign season:
+detsf$season <- ifelse(detsf$moday<"2019-03-21", "Winter",
+                       ifelse(detsf$moday<"2019-06-21", "Spring",
+                              ifelse(detsf$moday<"2019-09-21", "Summer",
+                                     ifelse(detsf$moday<"2019-12-21", "Fall","Winter"))))
+detsf$moday = NULL
+head(detsf)
+
+
+
+
+
+
+
+#lunar phase:
+
+library(lunar)
+detsf$date <- strftime(detsf$ESTEDT, tz="EST5EDT", format="%Y-%m-%d")
+detsf$date <- as.Date(detsf$date)
+
+detsf$lunar <- lunar.phase(detsf$date, shift = 0, name = 8)
+table(detsf$lunar)
+
+
+
+
+
+
+#temperature. I generally assign temperatures to my detection data from temp loggers in my tracking system.
+#if that's not an option, you can get them from NOAA data:
+
+library(xtractomatic)
+?xtractomatic
+#data comes from NOAAs Advanced Very High Resolution Radiometer (AVHRR). Can get temperature,
+#chlorophyll (more like borophyll), salinity and more
+
+#look up what datasets are available for sea surface temperature:
+SSTsearch <- searchData('datasetname:sst')
+# mhsstd1day is up to date and available in my study region at one day resolution
+
+#this takes a long time to do so we'll just do a few data points for fun:
+detsfsub <- detsf[5010:5020,]
+
+SST <- xtracto(xpos=detsfsub$lon, ypos=detsfsub$lat, tpos=detsfsub$date, dtype="mhsstd1day", .1, .1)
+#it doesn't work for some dates. You could also try longer term (eg 8 day) datasets to fill gaps.
+
+
+
+
+
+
+
+
+
+
+
+# generating presence/absence data ####
+head(detsf)
+# When exploring (and analyzing) telemetry data it's important to remember that it comes as presence-only data.
+# we're typically more interested in presence absence data, and if so it's wise to generate a presence-absence
+# time series dataset before assigning environmental variables the data. Depending on the timescale of
+# ecological phenomena you're interested in, you might consider hourly or daily. We'll do daily by receiver node:
+
+
+#need a data frame of every day each node had receivers deployed:
+DT <- data.frame(day=seq(from=min(Rxdeploy3$deployUTChour), to=max(Rxdeploy3$recoverUTChour), by="day"))
+head(DT)
+DT$day <- strftime(DT$day, format="%Y-%m-%d")
+DT$day <- as.POSIXct(DT$day, tz="UTC", format="%Y-%m-%d")
+str(DT)
+
+
+#station deployment info:
+head(Rxdeploy3)
+Rxdeploy3$node <- Rxmeta$node[match(Rxdeploy3$station, Rxmeta$station)]
+anyNA(Rxdeploy3$node)
+
+#NAs not relevent to this dataset:
+Rxdeploy4 <- Rxdeploy3 %>% filter(!is.na(node))
+
+
+#combine times with node info:
+
+DT2 <- merge(DT, Rxdeploy4, all=TRUE)
+head(DT2)
+
+#reduce down to just hours between deployment and recovery:
+DT3 <- DT2 %>% filter(day>=deployUTC & day<=recoverUTC)
+head(DT3)
+rm(DT2)
+
+permPA <- DT3 %>% group_by(node, day) %>% summarise()
+ggplot(permPA, aes(x=day, y=node))+geom_point()
+
+
+
+
+#summarise number of individuals present on each day:
+detsSum <- detsf %>% group_by(day, node) %>% summarise(IDcount=length(unique(FishID)))
+
+#assign to detsPA:
+permPA2 <- merge(permPA, detsSum, all.x=TRUE, by=c("day","node"))
+
+#make NAs 0s:
+permPA2$IDcount[is.na(permPA2$IDcount)]<-0
+head(permPA2)
+
+#might also be intersted simple presence/absence at the site:
+permPA2$pres <- ifelse(permPA2$IDcount==0, 0, 1)
+head(permPA2)
+str(permPA2)
+table(permPA2$pres)
+#zero inflated data! hooray. There's ways to deal with this in various analyses
+
+ggplot(permPA2, aes(x=day, y=IDcount))+geom_point()+facet_wrap(~node)
+
+#at this point you would need to assign all of your environmental data to this dataset as was done above
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# calculating detection events ####
+
+
+#Events function (based on glatos code) calculates unique detection events based on user defined time window (period)
+# needs: FishID, datetime, station
+Events(detsf, station="station", period=3600, condense=FALSE) #condense=FALSE returns full data frame with arrive,depart,event info
+head(EventData)
+
+Events(detsf, station="station", period=3600, condense=TRUE)  #condense=TRUE returns a summarized data frame
+head(EventSum)
+
+
+#let's look at residency by month and habitat type:
+
+head(EventData)
+
+EventD2 <- EventData %>% group_by(node, month, event) %>% summarise(res_time=max(ESTEDT)-min(ESTEDT), lat=mean(node_lat),lon=mean(node_lon))
+EventD2 <- EventD2 %>% group_by(node, month) %>% summarise(res_time=sum(res_time), lat=mean(lat),lon=mean(lon))
+head(EventD2)
+
+EventD2$month <- factor(EventD2$month, levels=c("January","February","March","April","May","June","July","August","September","October","November","December"))
+ggmap(FLmap, extent='normal')+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+  ylab("Latitude") +
+  xlab("Longitude")+
+  geom_point(data=EventD2, aes(x=lon,y=lat,size=as.numeric(log(as.numeric(res_time))), col=log(as.numeric((res_time)))))+
+  scale_color_continuous(low="yellow", high="red")+
+  facet_wrap(~month)
+
+
+
+
+
+#So raw detection data are interesting but hard to interpret:
+
+ggmap(FLmap, extent='normal')+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+  ylab("Latitude") +
+  xlab("Longitude")+
+  labs(size="log(detections)")+
+  geom_path(data=dets3, aes(x=lon,y=lat,col=FishID))+
+  geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=FishID))
+
+
+
+
+# convenient to look at this type of data as a network: #####
+
+# Earlier we calculated EventSum for each receiver station, which is convenient for generating a movement (adjacency)
+# matrix. We'll summarise the data by node instead of station to generate the network:
+
+#will have to respecify node as station in df:
+detsf2 <- detsf
+detsf2$station2 <- detsf2$station
+detsf2$station <- detsf2$node
+
+Events(detsf2, station="station", period=3600, condense=TRUE)  #condense=TRUE returns a summarized data frame
+head(EventSum)
+table(as.character(EventSum$location))
+
+
+#not the slickest way. Might be a bit slow on giant datasets:
+EventSum$from <-""
+EventSum$to <-""
+for (i in 2:length(EventSum$event)){
+  if(EventSum$individual[i]==EventSum$individual[i-1]){EventSum$from[i]=as.character(EventSum$location[i-1])}
+  if(EventSum$individual[i]==EventSum$individual[i-1]){EventSum$to[i]=as.character(EventSum$location[i])}
+}
+head(EventSum)
+EventSum2 <- EventSum %>% filter(from!="")
+str(EventSum2)
+
+MoveT <- table(EventSum2$from,EventSum2$to)
+
+
+
+
+#set of functions from Jack Finn (UMass Amherst) for network analysis:
+source('MovementFunctions_v2.r')
+MoveEdge <- MoveEdgeList(MoveT)
+MoveEdge$weight = as.numeric(MoveEdge$weight)
+
+
+# Import the edge list into an igraph object
+library(igraph)
+MoveGraph = graph.data.frame(MoveEdge, directed=T)
+class(MoveGraph)
+# Make a default plot of the graph
+plot(MoveGraph)
+
+
+# Inspect the data:
+V(MoveGraph) #prints the list of vertices (stations)
+head(E(MoveGraph)) #prints the list of edges (movements)
+
+
+# Number of nodes
+(nv = length(V(MoveGraph)))
+# Number of possible connections
+nv * nv
+# Actual number of connections
+(ne = length(E(MoveGraph)[E(MoveGraph)$weight>0]))
+# Connectance (allowing for self connections)
+ne/(nv*nv) # This graph is 23 % connected
+
+
+igraph::degree(MoveGraph) # print the number of edges per vertex
+# (i.e., movement types per station)
+
+
+
+#make a spatial map of the network:
+#need to summarise lat/lons by site
+
+V(MoveGraph)$Latitude  <- EventSum$mean_latitude[match(V(MoveGraph)$name, EventSum$location)]
+V(MoveGraph)$Longitude <- EventSum$mean_lonitude[match(V(MoveGraph)$name, EventSum$location)]
+V(MoveGraph)$Station <- as.character(EventSum$location[match(V(MoveGraph)$name, EventSum$location)])
+
+V(MoveGraph)$Station
+V(MoveGraph)$Latitude
+
+
+# Put vertex properties in a data frame
+
+# Need to rescale vertex size for the map (this was trial and error)
+V(MoveGraph)$Size =  igraph::degree(MoveGraph) # Put original vertex size into the variable Size
+V(MoveGraph)$size = V(MoveGraph)$Size   # We may want to resize it later but not lose OG data
+range(V(MoveGraph)$size)
+
+Vertices = data.frame(Name = V(MoveGraph)$name, lat = V(MoveGraph)$Latitude,
+                      lon = V(MoveGraph)$Longitude, size = V(MoveGraph)$Size)
+head(Vertices)
+
+
+
+ggmap(FLmap, extent='normal') +
+  geom_point(data=Vertices, aes(x=lon, y=lat, size=size),alpha=.6, color="yellow")+
+  scale_size(range=c(0.1,7)) +
+  labs(size="node degree")+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))
+
+
+
+# to include edges we need # of movements between each site
+
+head(EventSum)
+
+EventSummove2 <- EventSum %>% group_by(from, to) %>% summarise(count=length(to))
+head(EventSummove2)
+
+
+table(EventSum$location)
+EventSummove2$latfrom <- EventSum$mean_latitude[match(EventSummove2$from, EventSum$location)]
+EventSummove2$lonfrom <- EventSum$mean_lonitude[match(EventSummove2$from, EventSum$location)]
+EventSummove2$latto <- EventSum$mean_latitude[match(EventSummove2$to, EventSum$location)]
+EventSummove2$lonto <- EventSum$mean_lonitude[match(EventSummove2$to, EventSum$location)]
+
+EventSummove2.1 <- EventSummove2 %>% filter(from!=to)
+head(EventSummove2.1)
+
+#scale values for mapping
+range(EventSummove2.1$count) #convert to 0.1 to 3 ish
+EventSummove2.1$weight <- log10(EventSummove2.1$count)+0.1
+range(EventSummove2.1$weight)
+
+range(Vertices$size) # scale from 0.01 to 7
+Vertices$degree <- Vertices$size/2
+range(Vertices$degree)
+
+
+#plot
+
+ggmap(FLmap, extent='normal') +
+  geom_segment(data = EventSummove2.1, aes(x = lonfrom, y = latfrom, xend = lonto, yend = latto, size=weight),
+               arrow = arrow(length=unit(0.11,"cm"),type = "closed"), alpha=0.6,col="green")+
+  geom_point(data=Vertices, aes(x=lon, y=lat, size=degree),alpha=.6, color="yellow") +
+  scale_size_identity()+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  coord_cartesian(xlim=c(-82.4, -80.8), ylim=c(24.4, 25.1))
+
+
+
+
+
+# community detection algorithm
+
+#greedy algorithm:
+cfg <- cluster_fast_greedy(as.undirected(MoveGraph))
+plot(cfg, as.undirected(MoveGraph))
+
+
+V(MoveGraph)$community <- cfg$membership
+V(MoveGraph)$community
+
+community = data.frame(Name = V(MoveGraph)$name, comm = V(MoveGraph)$community)
+Vertices$community <- community$comm[match(Vertices$Name, community$Name)]
+
+#plot
+ggmap(FLmap, extent='normal') +
+  geom_segment(data = EventSummove2.1, aes(x = lonfrom, y = latfrom, xend = lonto, yend = latto, size=weight), col="yellow",
+               arrow = arrow(length=unit(0.11,"cm"),type = "closed"), alpha=0.6)+
+  geom_point(data=Vertices, aes(x=lon, y=lat, size=degree,color=as.factor(community)),alpha=.8) + scale_size_identity()+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))
+
+#put ellipses on:
+ggmap(FLmap, extent='normal') +
+  geom_segment(data = EventSummove2.1, aes(x = lonfrom, y = latfrom, xend = lonto, yend = latto, size=weight),
+               arrow = arrow(length=unit(0.11,"cm"),type = "closed"), alpha=0.6,col="yellow")+
+  geom_point(data=Vertices, aes(x=lon, y=lat, size=degree,color=as.factor(community)),alpha=.8) + scale_size_identity()+
+  stat_ellipse(data=Vertices, geom="polygon", aes(x=lon, y=lat,color=as.factor(community), fill=as.factor(community)),alpha=.3)+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+  theme(legend.position = "none")+
+  xlab("Longitude")+ylab("Latitude")
+
+
+# this is really a bad example of a community detection. Largely because the data are very sparse because
+# we're using a small, altered version of my data. Anyway you may find the code useful
+# there's a lot to know about network analysis. Check out some of the resources I included with this workshop
+
+
+
+
+
+
+
+
+
+
+
+#what about 'sociality'?
+
+head(detsf)
+detsc <- detsf %>% select(station, node, datetime, season,Transmitter, FishID, lat=node_lat, lon=node_lon) %>% arrange(datetime)
+MoveInfo(detsc)
+detsc <- MoveInfodf
+
+
+#weird hack to avoid using a for loop, count the number of connections between IDs:
+detsc$nrow <- 1:length(detsc$station)
+df <- detsc
+df$nrow <- df$nrow+1
+
+detsc$FishID2 <- df$FishID[match(detsc$nrow, df$nrow)]
+detsc$station2 <- df$station[match(detsc$nrow, df$nrow)]
+
+detsc$FishID3 <- ifelse(detsc$timediff<600 & detsc$FishID2!=detsc$FishID & detsc$station==detsc$station2,
+                          as.character(detsc$FishID2), "") #10 minute delay
+head(detsc)
+
+detsc2 <- detsc %>% filter(FishID3!="")
+detsc2$FishID <- as.character(detsc2$FishID)
+str(detsc2)
+
+Sociality <- table(detsc2$FishID,detsc2$FishID3)
+Sociality
+
+SocEdge <- MoveEdgeList(Sociality)
+SocEdge$weight = as.numeric(SocEdge$weight)
+head(SocEdge)
+
+
+# Import the edge list into an igraph object
+library(igraph)
+SocGraph = graph.data.frame(SocEdge, directed=T)
+plot(SocGraph)
+
+(nv = length(V(SocGraph)))
+nv * nv
+(ne = length(E(SocGraph)[E(SocGraph)$weight>0]))
+ne/(nv*nv)
+
+#there's a lot better ways to plot this data. Not going into it today
+
+
+
+
+
+
+
+
+
+
+#when and where are they being 'social'?
+
+SocSpace <- detsc %>% group_by(node, season) %>% summarise(soc_count=length(which(FishID3!="")), lat=mean(lat),lon=mean(lon))
+SocSpace$logsoc_count <-log(SocSpace$soc_count+1)
+head(SocSpace)
+
+ggmap(FLmap, extent='normal')+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+  ylab("Latitude") +
+  xlab("Longitude")+
+  geom_point(data=SocSpace, aes(x=lon,y=lat, col=logsoc_count,size=logsoc_count))+
+  scale_color_continuous(low="yellow", high="red")+
+  facet_wrap(~season)
+
+#
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# data interpolation ####
+library(glatos)
+?glatos
+
+#lots of valuable functions here, just need to make sure you have the correct variable names
+
+head(detsf)
+str(detsf)
+detsf$animal_id <- as.character(detsf$FishID)
+detsf$detection_timestamp_utc <- detsf$UTC
+detsf$deploy_long <- detsf$lon
+detsf$deploy_lat <- detsf$lat
+table(detsf$animal_id)
+
+
+head(detsf)
+detsf$year <- strftime(detsf$UTC, format="%Y")
+
+detsf20182019 <- detsf %>% filter(year=="2018"|year=="2019")
+Ppath <- interpolate_path(detsf20182019)
+head(Ppath)
+
+ggmap(FLmap, extent='normal')+
+  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+  ylab("Latitude") +
+  xlab("Longitude")+
+  geom_point(data=Ppath, aes(x=longitude,y=latitude, col=animal_id))
+
+
+
+#can also integrate barriers or interpolate at hourly level. see ?interpolate_path()
+
+head(Ppath)
+
+#animate paths:
+library(gganimate)
+p <- ggplot(Ppath) +
+  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkgreen") +
+  theme_bw() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  #geom_sf(data = area, fill = 'white') +
+  geom_point(data=Ppath, aes(longitude, latitude, col = animal_id), size = 2) +
+  coord_sf(xlim = c(-82.5, -81), ylim = c(24.2, 25.1)) +
+  labs(title = '',
+       subtitle = 'Date: {format(frame_time, "%b %Y")}',
+       x = "Longitude", y = "Latitude") +
+  theme(panel.background = element_rect(fill = 'white'),
+        legend.position = 'none')+
+  transition_time(bin_timestamp)+
+  shadow_wake(wake_length = 0.2)
+
+pAnim <- animate(p, duration=24, nframes=96)
+#watch it:
+pAnim
+
+#will look better if you calculate hourly movement paths and make more frames.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# VTrack has some cool tools including COA and brownian bridges ####
+
+# Vtrack guide: https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html
+
+## Setup data
+#needs to be in specific format to load an ATT object, including ddetection data, tag metadata, and station info. Check out
+# https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html for specific data format requirements
+
+#detections
+head(detsf)
+detsfvtrack <- detsf %>% rename(Latitude=lat, Longitude=lon, 'Station.Name'=station)
+detsfvtrack$'Date.and.Time..UTC.' <- detsfvtrack$UTC
+detsfvtrack$'Sensor.Value' <- as.integer("")
+detsfvtrack$'Sensor.Unit' <- as.factor("")
+detsfvtrack$Station.Name <- as.factor(detsfvtrack$Station.Name)
+detsfvtrack$Receiver <- as.factor(detsf$station)
+head(detsfvtrack)
+detsfvtrack <- detsfvtrack %>% select('Date.and.Time..UTC.', Receiver, Transmitter, 'Sensor.Value', 'Sensor.Unit',
+                                  'Station.Name', Latitude, Longitude)
+
+head(detsfvtrack)
+str(detsfvtrack)
+
+
+#tag data:
+head(tags2)
+tagsvtrack <- tags2 %>% rename(tag_id=FishID, transmitter_id=Transmitter, release_latitude=lat, release_longitude=lon,
+                                ReleaseDate=Tagdate, measurement=FLmm)
+str(tagsvtrack)
+tagsvtrack$tag_id <- as.character(tagsvtrack$tag_id)
+tagsvtrack$scientific_name <- "Trachinotus falcatus"
+tagsvtrack$common_name <- "permit"
+tagsvtrack$tag_project_name <- "BTTFLK"
+tagsvtrack$release_id <- tagsvtrack$tag_id
+tagsvtrack$tag_status <-"deployed"
+tagsvtrack$sex <-"unknown"
+
+#uses the tag expected life for data periods.. I elected to just use the periods between tag deployment and the last detection
+
+Tagperiod <- detsf %>% group_by(FishID) %>% summarise(start=min(UTC),end=max(UTC)) %>% as.data.frame()
+Tagperiod$days <- as.numeric((Tagperiod$end - Tagperiod$start) )
+Tagperiod$days <- as.numeric(round(Tagperiod$days,0))
+
+
+tagsvtrack$tag_expected_life_time_days <- Tagperiod$days[match(tagsvtrack$tag_id, Tagperiod$FishID )]
+
+
+tagsvtrack <- tagsvtrack %>% select(tag_id, transmitter_id, scientific_name, common_name, tag_project_name,
+                              release_id, release_latitude, release_longitude, ReleaseDate, tag_expected_life_time_days,
+                              tag_status, sex, measurement)
+tagsvtrack$ReleaseDate <- as.POSIXct(tagsvtrack$ReleaseDate, tz="US/Eastern",format="%Y-%m-%d %H:%M:%S")
+tagsvtrack$ReleaseDate <- format(tagsvtrack$ReleaseDate, tz="UTC",format="%Y-%m-%d %H:%M:%S")
+tagsvtrack$ReleaseDate <- as.POSIXct(tagsvtrack$ReleaseDate, tz="UTC",format="%Y-%m-%d %H:%M:%S")
+tagsvtrack$transmitter_id <- as.character(tagsvtrack$transmitter_id)
+head(tagsvtrack)
+
+#station info:
+
+head(Rxdeploy3)
+Rxdeployvtrack <- Rxdeploy3 %>% rename(station_name=station, receiver_name=Receiver, deploymentdatetime_timestamp=deployUTC,
+                                recoverydatetime_timestamp=recoverUTC, station_latitude=lat, station_longitude=lon)
+
+head(Rxdeployvtrack)
+str(Rxdeployvtrack)
+Rxdeployvtrack$installation_name <-"BTTFLK"
+Rxdeployvtrack$project_name <- "BTTFLK"
+Rxdeployvtrack$status <- "deployed"
+
+Rxdeployvtrack <- Rxdeployvtrack %>% select(station_name, receiver_name, installation_name, project_name, deploymentdatetime_timestamp,
+                                recoverydatetime_timestamp, station_latitude, station_longitude, status)
+
+str(detsfvtrack)
+str(tagsvtrack)
+str(Rxdeployvtrack)
+
+#data all ready
+
+
+
+
+
+
+
+library(VTrack)
+ATTdataBTT <- setupData(Tag.Detections = detsfvtrack, Tag.Metadata = tagsvtrack, Station.Information = Rxdeployvtrack , source="VEMCO")
+
+#can be used to make an abacus plot:
+abacusPlot(ATTdataBTT)
+
+#generate detection summary stats:
+detSum<-detectionSummary(ATTdataBTT,
+                         sub = "%Y-%m")
+detSum$Overall
+
+
+#calc dispersal summary info
+dispSum<-dispersalSummary(ATTdataBTT)
+
+#just dispersal data:
+dispSum2 <- dispSum %>% filter(Consecutive.Dispersal >0)
+
+
+#the glatos-based detection events above is good for calculatating residency at receivers. This gives you
+#more info on what the fish were doing in between.
+
+#in case you're ever interested in explore the mechanics behind functions:
+getAnywhere(dispersalSummary)
+
+
+
+
+
+#calculate Centers of Activity (Simpfendorfer, C. A., M. R. Heupel, and R. E. Hueter. 2002.)
+?COA
+
+COAdata <- COA(ATTdataBTT, timestep=3600, split=TRUE)
+warnings()
+
+
+#calcuate MCPL
+library(rgdal)
+proj<-CRS("+proj=longlat +datum=WGS84")
+
+## HRSummary() requires calculation of COAs first
+## Estimate 100% Maximum Convex Polygon (MCP) areas
+mcp_est <- HRSummary(COAdata,
+                     projCRS=proj,
+                     type="MCP",
+                     cont=100,
+                     sub = "%Y-%m")
+
+warnings()
+mcp_est
+
+
+
+
+## Estimate 20%, 50% and 95% Brownian Bridge Kernel Utilisation Distribution ('BBKUD') contour areas and store polygons
+BBkud_est<-HRSummary(COAdata,
+                     projCRS=proj,
+                     type="BBKUD",
+                     cont=c(20,50,95),
+                     storepoly=TRUE)
+
+
+
+#plot
+library(raster)
+library(viridis) ## access more color palettes
+
+## Select rasters of full KUDs for each individual into a single list
+fullstack <-
+  unlist(BBkud_est$Spatial.Objects)[grep("*_full", names(unlist(BBkud_est$Spatial.Objects)))]
+
+names(fullstack) <-
+  unlist(lapply(strsplit(names(fullstack), "[.]"), `[[`, 1))
+
+## Lets plot the overall BBKUD for Tag.ID `77523307`
+fulltag <- fullstack$`P91`
+values(fulltag)[values(fulltag) > 96] <- NA
+plot(fulltag, col = viridis(100), zlim = c(0, 100),
+     xlim=c(-85, -80), ylim=c(23.2, 27))
+points(station_latitude ~ station_longitude, statinfoBTT, col = 2, cex=0.7)
+points(Latitude.coa ~ Longitude.coa,
+       data = COAdata$`P3`,
+       pch = 20,
+       col = 4,
+       cex = 0.5)
+contour(fulltag, add = TRUE, levels = c(50, 95))
