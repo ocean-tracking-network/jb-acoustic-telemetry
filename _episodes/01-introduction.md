@@ -24,10 +24,13 @@ At the <a href="http://oceantrackingnetwork.org"> Ocean Tracking Network</a>, we
 
 In this lesson we'll take a shortcut on combining this data by using the detection data that OTN extracts from our database for researchers to use, combining the tags from Brendal Townsend's blue shark project you've already heard about, and two of OTN's own receiver lines, our Halifax Line and the Cabot Strait Line. This matches station location to serial number to detection event to tag ID to tagged animal. Once we load the detection extract and look around, we'll run a filtering algorithm on the data and see if all the detections found in the OTN database can be attributed to this project fairly and we can have confidence in them. Then we'll plot the detection set a few different ways using the glatos acoustic telemetry analysis and visualization package. If we get through all that we'll get into the OTN-supported python package resonATe that does a lot of these things too, as well as other analyses.
 
+~~~
 library(dplyr)
 options(repr.matrix.max.cols=500)
 data <- read.csv("data/nsbs_matched_detections_2014.csv")
 data
+~~~
+{: .language-r}
 
 load data.
 This enables collapsing blocks of code using the drop arrow on the left
