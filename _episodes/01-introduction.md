@@ -63,7 +63,7 @@ head(Rxdeploy)
 head(Rxmeta)
 head(tags)
 ~~~
-{:language-r}
+{:.language-r}
 
 
 notice the variables and their data type (important - google data types in R if unfamiliar)

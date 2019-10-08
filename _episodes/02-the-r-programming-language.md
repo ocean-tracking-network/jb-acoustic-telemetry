@@ -45,9 +45,11 @@ stringr::str_detect(variable, "[aeiou]")
 stringr also has a function to count the occurance of substrings.
 
 ~~~
-stringr::str_count(variable, "[aeiou]")  string + dplyr
+stringr::str_count(variable, "[aeiou]")
 ~~~
 {:.language-r}
+
+### stringr + dplyr
 
 Let's import some data a find a sepcific string in a column.
 
