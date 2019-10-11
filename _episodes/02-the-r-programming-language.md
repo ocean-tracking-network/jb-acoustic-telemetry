@@ -22,6 +22,16 @@ print(variable)
 ~~~
 {:.language-r}
 
+
+## Data Types
+
+R has a wide variety of data types including scalars, vectors (numerical, character, logical), matrices, data frames, and lists. Check out a short explanation here: https://www.statmethods.net/input/datatypes.htmlOur data has been read in and the columns have been converted to their proper data types.
+
+~~~
+sapply(detections, class)
+~~~
+{:.language-r}
+
 ## R Packages
 
 Packages are collections of R functions, data, and compiled code in a well-defined format. The directory where packages are stored is called the library. R comes with a standard set of packages. Others are available for download and installation. Once installed, they have to be loaded into the session to be used.Source: https://www.statmethods.net/interface/packages.html
@@ -57,6 +67,39 @@ Let's import some data a find a sepcific string in a column.
 library(dplyr)
 data <- read.csv("data//nsbs_matched_detections_2014.csv")
 stringr::str_detect(data$unqdetecid, "release")
+~~~
+{:.language-r}
+
+## Filtering
+We can use dplyr::filter() to find rows/cases where conditions are true. Combining this with stringr::str_detect()
+
+dplyr Filtering: https://dplyr.tidyverse.org/reference/filter.html
+
+~~~
+releases <- detections %>% dplyr::filter(stringr::str_detect(unqdetecid, "release"))  
+~~~
+{:.language-r}
+
+~~~
+non_release_detections <- detections %>% dplyr::filter(!stringr::str_detect(unqdetecid, "release"))
+~~~
+{:.language-r}
+
+Total Detections
+~~~
+ count(detections)  
+~~~
+{:.language-r}
+
+Number of releases
+~~~
+ count(releases)
+~~~
+{:.language-r}
+
+Number of Non-Release Detections (The Good Stuff)
+~~~
+count(non_release_detections)
 ~~~
 {:.language-r}
 
