@@ -1,5 +1,5 @@
 ---
-title: "Data Manipulation Basics"
+title: "The GLATOS Package"
 teaching: 0
 exercises: 0
 questions:
