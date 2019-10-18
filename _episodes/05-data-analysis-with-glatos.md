@@ -140,7 +140,114 @@ map <- summary_data %>%
 
 map  
 ~~~
-{:language-r}
+{:.language-r}
+
+Here is some Mapping related code that I stole from the Brownscombe lecture.
+
+~~~
+dets <- read.csv("detections.csv") #detections from acoustic receivers
+Rxdeploy <- read.csv("Rx_deployments.csv") #receiver station info
+Rxmeta <- read.csv("Rx_metadata.csv") #receiver station info
+tags <- read.csv("tag_info.csv") #tagged fish data
+
+
+#check out the data (these are all data frames by default):
+head(dets)
+tail(dets)
+str(dets)
+dets[1:10,]
+
+head(Rxdeploy)
+head(Rxmeta)
+head(tags)
+~~~
+{:.language-r}
+
+The above code is duplicated in lesson 3, so we should probably figure out a better way to consolidate all this.
+
+Notice the variables and their data type (important - google data types in R if unfamiliar)
+
+Clearly we need to combine the above 4 dataframes in various ways to do anything with these data
+Let's grease the wheels and check out fish tagging and receiver locations:
+
+I like to use google maps to plot on for basic visualization. Google recently made it a little trickier to do this
+because you have to go online and register a 'project' with them to get an API code. So this code will not work for
+you unless you do that and get your API code that goes beside 'key' below.
+
+Just to make sure whoever I ultimately implicate in this is actually reading and not just skimming,
+I'm gonna write "poopy buttfart" here and see if they take it out. -- BD
+
+~~~
+library(ggmap)
+
+# register_google(key = "")
+FLmap <- get_googlemap(center = c(lon=-81.7, lat=24.8),
+                        zoom = 8, size = c(640, 640), scale = 4,
+                        maptype = c("satellite"))
+
+
+#just load in the map from a workspace I provided (you need to change this to your working directory info)
+load("~/Desktop/workshops/Acoustic telemetry workshop Dal 2019/Acoustic telemetry workshop workspace.RData")
+
+ggmap(FLmap, extent='normal')+
+  scale_x_continuous(limits=c(-82.6, -80.1))+
+  scale_y_continuous(limits=c(24.2, 25.5))+
+  ylab("Latitude") +
+  xlab("Longitude")+
+  geom_point(data=Rxmeta, aes(x=lon,y=lat), col="red",size=2)+
+  geom_point(data=tags,aes(x=lon,y=lat), col="yellow", size=1)
+~~~
+{:.language-r}
+
+In order to use dets in a meaningful way, we'll need to assign station deployments, metadata, and fish tagging
+info to them.
+
+~~~
+# assign permit tag info to the detections ####
+
+str(dets)
+str(tags)
+
+~~~
+{:.language-r}
+
+Let's assign FishID, tagging date (datetime), and fork length (FLmm) to detections.
+but first, we'll deal with dates really quickly:
+
+~~~
+#date/times need to be converted to a POSIXct object to be manipulated and plotted:
+tags$datetimeESTEDT <- as.POSIXct(tags$datetime, tz="EST5EDT", format="%d-%m-%Y %H:%M")
+str(tags)
+
+#convert to UTC time:
+tags$datetimeUTC <- as.POSIXct(strftime(tags$datetimeESTEDT, tz="UTC", format="%Y-%m-%d %H:%M:%S"))
+head(tags)
+~~~
+{:.language}
+
+Not sure if the above belongs here. Might need more cogent discussion on how to break this all up -- BD
+
+Now we can assign above variables from tags to dets using the merge function:
+
+~~~
+?merge
+dets2 <- merge(dets, tags, by="Transmitter", all.x=TRUE)
+head(dets2)
+~~~
+{:.language-r}
+
+Now we would have to clean this dataset up quite a bit.
+
+Another option is to use match:
+
+~~~
+dets$FishID <- tags$FishID[match(dets$Transmitter, tags$Transmitter)]
+dets$FLmm <- tags$FLmm[match(dets$Transmitter, tags$Transmitter)]
+dets$Tagdate <- tags$datetimeUTC[match(dets$Transmitter, tags$Transmitter)]
+anyNA(dets$FishID)
+head(dets)
+~~~
+{:.language-r}
 
 ## MapBox
 Mapbox is a Live Location Platform that can serve up map tiles for use.
