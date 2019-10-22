@@ -223,7 +223,7 @@ str(tags)
 tags$datetimeUTC <- as.POSIXct(strftime(tags$datetimeESTEDT, tz="UTC", format="%Y-%m-%d %H:%M:%S"))
 head(tags)
 ~~~
-{:.language}
+{:.language-r}
 
 Not sure if the above belongs here. Might need more cogent discussion on how to break this all up -- BD
 
