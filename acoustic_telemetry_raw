@@ -77,6 +77,9 @@ head(Rxmeta)
 head(tags)
 
 
+##The above is included in Lesson 3 of the Carpentries stuff I'm building out -- BD 20191018
+#############################################################################################
+
 
 # notice the variables and their data type (important - google data types in R if unfamiliar)
 
@@ -146,6 +149,8 @@ head(dets)
 
 
 #
+# The above is in Lesson 5.
+##############################################
 
 
 
@@ -198,7 +203,8 @@ head(Rxdeploy2)
 #much better. We need to assign the station number to detections based on Receiver number and the time it was there.
 #this is a complicated data problem...
 
-
+#The above has been replicated in Lesson 6.
+##################################################
 
 
 
@@ -307,7 +313,8 @@ head(dets3)
 dets3 <- dets3 %>% select(-X,-lat.y, -lon.y, -depth.y, lat=lat.x, lon=lon.x, depth=depth.x)
 head(dets3)
 
-
+#The above has been replicated in Lesson 7.
+##################################################
 
 
 
@@ -470,7 +477,8 @@ ggmap(FLmap, extent='normal')+
   geom_point(data=tags, aes(x=lon, y=lat),col="yellow")+
   facet_wrap(~FishID)
 
-
+  #The above has been replicated in Lesson 8.
+  ##################################################
 
 
 #interactive map using plotly
@@ -543,7 +551,8 @@ pAnim
 anim_save("pAnim.gif")
 
 
-
+#The above has been replicated in Lesson 9.
+##################################################
 
 
 
