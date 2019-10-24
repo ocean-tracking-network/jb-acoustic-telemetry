@@ -1045,7 +1045,8 @@ ggmap(FLmap, extent='normal') +
 # we're using a small, altered version of my data. Anyway you may find the code useful
 # there's a lot to know about network analysis. Check out some of the resources I included with this workshop
 
-
+# The above is replicated in lesson 13.
+############################################
 
 
 
@@ -1124,7 +1125,8 @@ ggmap(FLmap, extent='normal')+
 
 #
 
-
+#The above is replicated in lesson 14.
+#########################################
 
 
 
