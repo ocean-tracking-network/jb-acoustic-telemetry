@@ -1206,7 +1206,8 @@ pAnim
 
 
 
-
+##The above is replicated in Lesson 15.
+##########################################
 
 
 
@@ -1391,3 +1392,6 @@ points(Latitude.coa ~ Longitude.coa,
        col = 4,
        cex = 0.5)
 contour(fulltag, add = TRUE, levels = c(50, 95))
+
+#The above is replicated in lesson 16
+#############################################
