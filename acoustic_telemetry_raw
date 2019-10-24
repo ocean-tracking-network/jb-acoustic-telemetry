@@ -733,6 +733,8 @@ SST <- xtracto(xpos=detsfsub$lon, ypos=detsfsub$lat, tpos=detsfsub$date, dtype="
 
 
 
+#The above has been replicated in Lesson 11.
+##################################################
 
 
 
@@ -803,7 +805,8 @@ ggplot(permPA2, aes(x=day, y=IDcount))+geom_point()+facet_wrap(~node)
 
 #at this point you would need to assign all of your environmental data to this dataset as was done above
 
-
+#The above is replicated in lesson 12.
+###############################################################
 
 
 
