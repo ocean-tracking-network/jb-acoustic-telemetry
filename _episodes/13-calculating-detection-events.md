@@ -281,4 +281,4 @@ This is really a bad example of a community detection. Largely because the data 
 We're using a small, altered version of my data. Anyway you may find the code useful
 there's a lot to know about network analysis. Check out some of the resources I included with this workshop
 
-(Oh my god, dude, now you tell me it's a bad example. Can we make a better one? --BD)
+

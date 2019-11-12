@@ -225,7 +225,7 @@ head(tags)
 ~~~
 {:.language-r}
 
-Not sure if the above belongs here. Might need more cogent discussion on how to break this all up -- BD
+
 
 Now we can assign above variables from tags to dets using the merge function:
 

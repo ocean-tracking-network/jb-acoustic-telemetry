@@ -62,7 +62,7 @@ ne/(nv*nv)
 
 There's a lot better ways to plot this data. Not going into it today
 
-(Brownscombe, my dude... --BD)
+
 
 
 

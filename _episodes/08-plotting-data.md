@@ -21,7 +21,7 @@ FishIDsum
 ~~~
 {:.language-r}
 
-Can we get a little preamble around this? -- BD
+
 
 ## Summarise by station:
 
@@ -96,7 +96,7 @@ ggplot(data=dets3day, aes(x=day, y=FishID, col=node))+geom_point()+
 ~~~
 {:.language-r}
 
-Feel like we could break up the above into 3 discrete blocks? Gotta get a little preamble around it though. --BD
+
 
 
 Make some spatial plots:
@@ -122,7 +122,7 @@ perm_map
 dev.off()
 ~~~
 {:.language-r}
-Ditto the above, let's slice this up. -- BD
+
 
 ## Using maps to track movement patterns
 

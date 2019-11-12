@@ -14,8 +14,7 @@ keypoints:
 
 When analyzing data, 80% of time is spent cleaning and manipulating data and only 20% actually analyzing it. For this reason, it is critical to become familiar with the data cleaning process and getting your data into a format that can be analyzed.Let's begin with reading in our data using GLATOS (which will be explained below).
 
-*The below is a kludge, part from our own acoustic telemetry proto-Carpentries thing and part from Jake Brownscombe's lecture. I'm not presently sure what the best way to integrate this is, but if someone better-informed than me wants to take a crack at it, that's A-OK by me. I've left in Brownscombe's use of read.csv rather than our own glatos::read_otn_detections bit because it seems more generic.
--- BD 20191008*
+
 ~~~
 library(dplyr)
 library(stringr)

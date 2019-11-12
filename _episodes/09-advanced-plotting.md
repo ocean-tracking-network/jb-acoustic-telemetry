@@ -40,7 +40,7 @@ p <-  ggplot(stations2) +
 ggplotly(p)
 ~~~
 {:.language-r}
-Gotta be something we can do to split up the above -- BD
+
 
 ## Animations using gganimate
 

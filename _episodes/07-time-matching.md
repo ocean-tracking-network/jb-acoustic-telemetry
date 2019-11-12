@@ -57,7 +57,7 @@ str(Rxdeploy2)
 ~~~
 {:.language-r}
 
-Really not sure what to do with the above. Someone with better grounding in it should sweep through and break it up into more comfortable chunks -- BD
+
 
 ## Matching Detections to Times
 
