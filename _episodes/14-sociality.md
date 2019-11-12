@@ -58,22 +58,12 @@ nv * nv
 (ne = length(E(SocGraph)[E(SocGraph)$weight>0]))
 ne/(nv*nv)
 ~~~
-{:.language-r}
 
+{:.language-r}
 There's a lot better ways to plot this data. Not going into it today
 
-
-
-
-
-
-
-
-
-
-
-#when and where are they being 'social'?
-
+When and where are they being 'social'?
+~~~
 SocSpace <- detsc %>% group_by(node, season) %>% summarise(soc_count=length(which(FishID3!="")), lat=mean(lat),lon=mean(lon))
 SocSpace$logsoc_count <-log(SocSpace$soc_count+1)
 head(SocSpace)
@@ -85,5 +75,3 @@ ggmap(FLmap, extent='normal')+
   geom_point(data=SocSpace, aes(x=lon,y=lat, col=logsoc_count,size=logsoc_count))+
   scale_color_continuous(low="yellow", high="red")+
   facet_wrap(~season)
-
-#
