@@ -1,5 +1,5 @@
 ---
-title: "Sociality"
+title: "Data Interpolation"
 teaching: 0
 exercises: 0
 questions:
