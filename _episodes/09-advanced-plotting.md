@@ -1,5 +1,5 @@
 ---
-title: "Summarising and Plotting Data"
+title: "Advanced Plotting"
 teaching: 0
 exercises: 0
 questions:

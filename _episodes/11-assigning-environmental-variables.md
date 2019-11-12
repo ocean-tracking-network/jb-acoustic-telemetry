@@ -1,5 +1,5 @@
 ---
-title: "Data Filtering and Calculating Movement Metrics"
+title: "Assigning Environmental Variables"
 teaching: 0
 exercises: 0
 questions:
