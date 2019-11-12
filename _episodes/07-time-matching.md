@@ -15,13 +15,17 @@ keypoints:
 We'll have to generate a new hourly datetime object and cross assign to detections based on Receiver and hour.
 
 ~~~
+det_file <- system.file("extdata", "blue_shark_detections.csv",
+                         package = "glatos")
 head(dets)
+
+dets <- read_otn_detections(det_file)
 
 #remove Station.Name, Latitude, Longitude can't be trusted
 dets <- dets %>% select(-Station.Name, -Latitude, -Longitude)
 
 #need to convert datetime to posix:
-dets$UTC <- as.POSIXct(dets$Date.and.Time..UTC., tz="UTC", format="%Y-%m-%d %H:%M:%S")
+dets$UTC <- as.POSIXct(dets$detection_timestamp_utc, tz="UTC", format="%Y-%m-%d %H:%M:%S")
 
 
 # use strftime to do generate an hour object:
@@ -33,14 +37,17 @@ dets$day <- as.POSIXct(dets$day, tz="UTC", format="%Y-%m-%d")
 
 head(dets)
 
+depl_file <- system.file("extdata", "hfx_deployments.csv",
+                         package = "glatos")
+Rxdeploy2 <- glatos::read_otn_deployments(depl_file) 
 
 #det has all Receiver SN (character) and hour (posix). do the same with Rxdeploy2:
 head(Rxdeploy2)
 
-Rxdeploy2$deployUTChour <- strftime(Rxdeploy2$deployUTC, tz="UTC", format="%Y-%m-%d %H")
+Rxdeploy2$deployUTChour <- strftime(Rxdeploy2$deploy_date_time, tz="UTC", format="%Y-%m-%d %H")
 Rxdeploy2$deployUTChour <- as.POSIXct(Rxdeploy2$deployUTChour, tz="UTC", format="%Y-%m-%d %H")
 
-Rxdeploy2$recoverUTChour <- strftime(Rxdeploy2$recoverUTC, tz="UTC", format="%Y-%m-%d %H")
+Rxdeploy2$recoverUTChour <- strftime(Rxdeploy2$recover_date_time, tz="UTC", format="%Y-%m-%d %H")
 Rxdeploy2$recoverUTChour <- as.POSIXct(Rxdeploy2$recoverUTChour, tz="UTC", format="%Y-%m-%d %H")
 
 head(Rxdeploy2)
@@ -60,7 +67,7 @@ for loops to check through the dates (very slow) we'll generate an hourly time d
 ~~~
 #reduce Rxdeploy2 down to those that were recovered:
 head(Rxdeploy3)
-Rxdeploy3 <- Rxdeploy2 %>% filter(Downloaded=="y")
+Rxdeploy3 <- Rxdeploy2 %>% filter(downloads > 0)
 ~~~
 {:.language-r}
 

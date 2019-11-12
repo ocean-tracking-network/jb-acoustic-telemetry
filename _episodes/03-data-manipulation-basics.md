@@ -21,7 +21,8 @@ library(dplyr)
 library(stringr)
 options(repr.matrix.max.cols=500)
 
-data <- read.csv("data/nsbs_matched_detections_2014.csv")
+detections_path <- system.file('extdata', 'blue_shark_detections.csv', package ='glatos')
+data <- read.csv(detections_path)
 data
 ~~~
 {: .language-r}

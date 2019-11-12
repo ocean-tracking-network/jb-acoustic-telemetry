@@ -12,8 +12,8 @@ keypoints:
 
 ## R: A Statistical Programming Language
 
-R is a language and environment for statistical computing and graphics. R provides a wide variety of statistical (linear and nonlinear modelling, classical statistical tests, time-series analysis, classification, clustering, …) and graphical techniques, and is highly extensible.Source: https://www.r-project.org/about.html R Scripts
-An R script is simply a text file containing (almost) the same commands that you would enter on the command line of R. ( almost) refers to the fact that if you are using sink() to send the output to a file, you will have to enclose some commands in print() to get the same output as on the command line.Source: https://cran.r-project.org/doc/contrib/Lemon-kickstart/kr_scrpt.html
+R is a language and environment for statistical computing and graphics. R provides a wide variety of statistical (linear and nonlinear modelling, classical statistical tests, time-series analysis, classification, clustering, …) and graphical techniques, and is highly extensible.Source: [https://www.r-project.org/about.html](https://www.r-project.org/about.html) R Scripts
+An R script is simply a text file containing (almost) the same commands that you would enter on the command line of R. ( almost) refers to the fact that if you are using sink() to send the output to a file, you will have to enclose some commands in print() to get the same output as on the command line.Source: [https://cran.r-project.org/doc/contrib/Lemon-kickstart/kr_scrpt.html](https://www.r-project.org/about.html)
 
 ~~~
 variable <- "Your name"
@@ -25,7 +25,7 @@ print(variable)
 
 ## Data Types
 
-R has a wide variety of data types including scalars, vectors (numerical, character, logical), matrices, data frames, and lists. Check out a short explanation here: https://www.statmethods.net/input/datatypes.htmlOur data has been read in and the columns have been converted to their proper data types.
+R has a wide variety of data types including scalars, vectors (numerical, character, logical), matrices, data frames, and lists. Check out a short explanation here: [https://www.statmethods.net/input/datatypes.html](https://www.statmethods.net/input/datatypes.html) Our data has been read in and the columns have been converted to their proper data types.
 
 ~~~
 sapply(detections, class)
@@ -34,7 +34,7 @@ sapply(detections, class)
 
 ## R Packages
 
-Packages are collections of R functions, data, and compiled code in a well-defined format. The directory where packages are stored is called the library. R comes with a standard set of packages. Others are available for download and installation. Once installed, they have to be loaded into the session to be used.Source: https://www.statmethods.net/interface/packages.html
+Packages are collections of R functions, data, and compiled code in a well-defined format. The directory where packages are stored is called the library. R comes with a standard set of packages. Others are available for download and installation. Once installed, they have to be loaded into the session to be used.Source: [https://www.statmethods.net/interface/packages.html](https://www.statmethods.net/interface/packages.html)
 
 ### Install the R package stringr
 
@@ -65,7 +65,8 @@ Let's import some data a find a sepcific string in a column.
 
 ~~~
 library(dplyr)
-data <- read.csv("data//nsbs_matched_detections_2014.csv")
+detections_path <- system.file('extdata', 'blue_shark_detections.csv', package ='glatos')
+data <- read.csv(detections_path)
 stringr::str_detect(data$unqdetecid, "release")
 ~~~
 {:.language-r}
@@ -73,7 +74,7 @@ stringr::str_detect(data$unqdetecid, "release")
 ## Filtering
 We can use dplyr::filter() to find rows/cases where conditions are true. Combining this with stringr::str_detect()
 
-dplyr Filtering: https://dplyr.tidyverse.org/reference/filter.html
+dplyr Filtering: [https://dplyr.tidyverse.org/reference/filter.html](https://dplyr.tidyverse.org/reference/filter.html)
 
 ~~~
 releases <- detections %>% dplyr::filter(stringr::str_detect(unqdetecid, "release"))  

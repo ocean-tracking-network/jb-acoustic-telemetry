@@ -11,7 +11,7 @@ keypoints:
 ---
 
 ## Data Analysis Using GLATOS
-Data analysis is a process of inspecting, cleansing, transforming, and modeling data with the goal of discovering useful information, informing conclusions, and supporting decision-making (https://en.wikipedia.org/wiki/Data_analysis).
+Data analysis is a process of inspecting, cleansing, transforming, and modeling data with the goal of discovering useful information, informing conclusions, and supporting decision-making [https://en.wikipedia.org/wiki/Data_analysis](https://en.wikipedia.org/wiki/Data_analysis).
 
 Basically, the point is to turn data into information and information into knowledge. There are many ways to look at and compare dependent and independent variables, find relations, and even create models and predict behaviours. But, we are only going to focus on analyzing time and location data in the simplest way.
 
@@ -22,13 +22,14 @@ library(dplyr)
 library(glatos)
 library(stringr)
 
-detections <- glatos::read_otn_detections("data/nsbs_matched_detections_2014.csv")
+detections_path <- system.file('extdata', 'blue_shark_detections.csv', package ='glatos')
+detections <- glatos::read_otn_detections(detections_path)
 detections <- detections %>% filter(!stringr::str_detect(unqdetecid, "release"))
 detections <- glatos::false_detections(detections, tf = 3600)
 filtered_detections <- detections %>% filter(passed_filter != FALSE)
 
 detection_events <- glatos::detection_events(filtered_detections, location_col = 'station')
-detection_events  Time Series Analysis & Lubridate
+detection_events  # Time Series Analysis & Lubridate
 ~~~
 {:.language-r}
 
@@ -36,7 +37,7 @@ Time series show the when, the before, and the after for data points. The lubrid
 
 Date-time data can be frustrating to work with in R. R commands for date-times are generally unintuitive and change depending on the type of date-time object being used. Moreover, the methods we use with date-times must be robust to time zones, leap days, daylight savings times, and other time related quirks, and R lacks these capabilities in some situations. Lubridate makes it easier to do the things R does with date-times and possible to do the things R does not.
 
-Source: https://lubridate.tidyverse.org
+Source: [https://lubridate.tidyverse.org](https://lubridate.tidyverse.org)
 
 ~~~
 library(lubridate)
@@ -78,7 +79,7 @@ summarise() is typically used on grouped data created by group_by(). The output 
 
 ~~~
 summary_data <- detection_events %>% group_by(location) %>% summarise(detection_count = sum(num_detections),
-                                                                      num_unique_tags = n_distinct(individual),
+                                                                      num_unique_tags = n_distinct(animal_id),
                                                                       total_residence_time_in_seconds = sum(detection_interval),
                                                                       latitude = mean(mean_latitude),
                                                                       longitude = mean(mean_longitude))  
@@ -174,8 +175,7 @@ I like to use google maps to plot on for basic visualization. Google recently ma
 because you have to go online and register a 'project' with them to get an API code. So this code will not work for
 you unless you do that and get your API code that goes beside 'key' below.
 
-Just to make sure whoever I ultimately implicate in this is actually reading and not just skimming,
-I'm gonna write "poopy buttfart" here and see if they take it out. -- BD
+[Here's the RData for the google map](https://github.com/ocean-tracking-network/jb-acoustic-telemetry/raw/gh-pages/Acoustic%20telemetry%20workshop%20workspace.RData)
 
 ~~~
 library(ggmap)
