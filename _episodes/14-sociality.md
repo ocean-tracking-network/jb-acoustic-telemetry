@@ -58,8 +58,8 @@ nv * nv
 (ne = length(E(SocGraph)[E(SocGraph)$weight>0]))
 ne/(nv*nv)
 ~~~
-
 {:.language-r}
+
 
 There's a lot better ways to plot this data. Not going into it today
 When and where are they being 'social'?
@@ -77,4 +77,5 @@ ggmap(FLmap, extent='normal')+
   scale_color_continuous(low="yellow", high="red")+
   facet_wrap(~season)
 ~~~
+{:.language-r}
 
