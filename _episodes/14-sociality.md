@@ -59,13 +59,11 @@ nv * nv
 ne/(nv*nv)
 ~~~
 
-{:.language-r}
-
-
 There's a lot better ways to plot this data. Not going into it today
 
 When and where are they being 'social'?
-~~~
+
+{:.language-r}
 SocSpace <- detsc %>% group_by(node, season) %>% summarise(soc_count=length(which(FishID3!="")), lat=mean(lat),lon=mean(lon))
 SocSpace$logsoc_count <-log(SocSpace$soc_count+1)
 head(SocSpace)
