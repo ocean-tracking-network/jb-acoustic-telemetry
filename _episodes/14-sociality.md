@@ -60,6 +60,8 @@ ne/(nv*nv)
 ~~~
 
 {:.language-r}
+
+
 There's a lot better ways to plot this data. Not going into it today
 
 When and where are they being 'social'?
@@ -75,3 +77,5 @@ ggmap(FLmap, extent='normal')+
   geom_point(data=SocSpace, aes(x=lon,y=lat, col=logsoc_count,size=logsoc_count))+
   scale_color_continuous(low="yellow", high="red")+
   facet_wrap(~season)
+~~~
+
