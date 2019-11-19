@@ -13,7 +13,7 @@ called `data` inside of the `acoustic-workshop` folder.
 ### R version 3.6.x or better and RStudio
 
 Once RStudio is open, run this install script. It's best to run it line by line instead of all at once in case there are errors. 
-
+<b>Note:</b> When running through the installs, if you encounter a prompt asking you to upgrade packages. Choosing Option `3: None`, works in most situations.
 ```r
 install.packages('ggplot2')
 install.packages('ggmap')
@@ -46,7 +46,6 @@ library(remotes)
 install_url("https://gitlab.oceantrack.org/GreatLakes/glatos/repository/master/archive.zip",
             build_opts = c("--no-resave-data", "--no-manual"))  
 install.packages("here")
-
 ```
 
 Once the packages are installed, change your working directory in RStudio to `acoustic-workshop` using the files menu, or the `setwd('~/Desktop/acoustic-workshop')`
