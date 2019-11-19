@@ -3,11 +3,13 @@ title: "Advanced Plotting"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "What are some of the options for advanced data visualization?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Show how to use Plotly to create an interactive map."
+- "Show how to use gganimate to produce an animated plot."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "Plotly can be used to create an interactive map."
+- "gganimate can be used to create an animated plot."
 ---
 
 ## Interactive map using plotly

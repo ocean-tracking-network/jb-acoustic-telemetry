@@ -3,11 +3,13 @@ title: "Additional Interpolation and Plotting with VTrack"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "How can I use VTrack to further analyse my data?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Introduce VTrack and explain what it is for."
+- "Properly configure data for use with VTrack."
+- "Use VTrack to make plots and detection summaries."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "VTrack provides robust options for more advanced visualization."
 ---
 
 VTrack has some cool tools including COA and brownian bridges
