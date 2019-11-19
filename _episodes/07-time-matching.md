@@ -74,7 +74,11 @@ Rxdeploy3 <- Rxdeploy2 %>% filter(downloads > 0)
 Make a time variable for whole study period:
 
 ~~~
-DT <- data.frame(hour=seq(from=min(Rxdeploy3$deployUTChour), to=max(Rxdeploy3$recoverUTChour), by="hour"))
+DT <- data.frame(hour=seq(
+  from=min(Rxdeploy3$deployUTChour, na.rm = TRUE), 
+  to=max(Rxdeploy3$recoverUTChour, na.rm = TRUE), 
+  by="hour")
+)
 str(DT)
 DT[1,]
 ~~~
@@ -86,11 +90,11 @@ Then, combine times with station info:
 DT2 <- merge(DT, Rxdeploy3, all=TRUE)
 head(DT2)
 ~~~
-{:language-r}
+{:.language-r}
 
 Reduce down to just hours between deployment and recovery:
 ~~~
-DT3 <- DT2 %>% filter(hour>=deployUTC & hour<=recoverUTC)
+DT3 <- DT2 %>% filter(hour>=deployUTChour & hour<=recoverUTChour)
 head(DT3)
 rm(DT2) #removes object from R environment
 ~~~
@@ -98,7 +102,7 @@ rm(DT2) #removes object from R environment
 
 We can now summarise the data:
 ~~~
-DT3sum <- DT3 %>% group_by(Receiver,deployUTChour) %>% summarise(Recoverhour=mean(recoverUTChour), count=length(hour)) %>% ungroup()
+DT3sum <- DT3 %>% group_by(station, deployUTChour) %>% summarise(Recoverhour=mean(recoverUTChour), count=length(hour)) %>% ungroup()
 DT3sum #notice this is a tibble
 ~~~
 {:.language-r}
@@ -107,7 +111,7 @@ Now, join det with DT3 matching SN and hour
 
 ~~~
 head(dets)
-dets2 <- merge(dets, DT3, all.x=TRUE,by=c("hour","Receiver"))
+dets2 <- merge(dets, DT3, all.x=TRUE,by=c("hour","station"))
 head(dets2)
 ~~~
 {:.language-r}
@@ -117,7 +121,7 @@ Are there any detections occuring oustide of deployment periods? We can check.
 ~~~
 anyNA(dets2$station)
 ~~~
-{:language-r}
+{:.language-r}
 
 Chances are the first time there will be, which could just be from being around transmitters or tx receivers outside the water.
 Check them out to see if there's issues:

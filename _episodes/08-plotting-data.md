@@ -14,8 +14,8 @@ keypoints:
 
 ~~~
 str(dets3)
-FishIDsum <- dets3 %>% group_by(FishID) %>%
-  summarise(dets=length(FishID),stations=length(unique(Receiver)), nodes=length(unique(node)),
+FishIDsum <- dets3 %>% group_by(animal_id) %>%
+  summarise(dets=length(animal_id),stations=length(unique(station)), nodes=length(unique(node)),
             min=min(UTC), max=max(UTC), tracklength=max(UTC)-min(UTC)) %>% as.data.frame()
 FishIDsum
 ~~~
@@ -38,8 +38,8 @@ Summarise detections:
 
 ~~~
 stationsum <- dets3 %>% group_by(station) %>%
-  summarise(detections=length(FishID),
-            uniqueID=length(unique(FishID)), det_days=length(unique(as.character(day)))) %>% as.data.frame()
+  summarise(detections=length(animal_id),
+            uniqueID=length(unique(animal_id)), det_days=length(unique(as.character(day)))) %>% as.data.frame()
 ~~~
 {:.language-r}
 
@@ -81,18 +81,19 @@ Abacus plot:
 ~~~
 #need to summarise by day to make less computationally intensive:
 head(dets3)
-dets3day <- dets3 %>% group_by(node, day, FishID) %>% summarise(dets=length(FishID))
+dets3day <- dets3 %>% group_by(node, day, animal_id) %>% summarise(dets=length(animal_id))
 head(dets3day)
 
 #plot
 library(ggplot2)
 ?ggplot()
-ggplot(data=dets3day, aes(x=day, y=FishID, col=node))+geom_point()
+ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point()
 
 #add tagging datetimes:
 head(tags)
-ggplot(data=dets3day, aes(x=day, y=FishID, col=node))+geom_point()+
-  geom_point(data=tags, aes(x=datetimeESTEDT,y=FishID),col="black")
+ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point() +
+  geom_point(data=tags, aes(x=datetimeESTEDT,y=FishID),col="black") +
+  scale_color_brewer()
 ~~~
 {:.language-r}
 
@@ -103,8 +104,8 @@ Make some spatial plots:
 
 ~~~
 #examine by station and FishID:
-stationFishID <- dets3 %>% group_by(station, FishID) %>%
-  summarise(lat=mean(lat), lon=mean(lon), dets=length(FishID), logdets=log(length(FishID)))
+stationFishID <- dets3 %>% group_by(station, animal_id) %>%
+  summarise(lat=mean(lat), lon=mean(lon), dets=length(animal_id), logdets=log(length(animal_id)))
 head(stationFishID)
 
 perm_map <- ggmap(FLmap, extent='normal')+
@@ -112,8 +113,8 @@ perm_map <- ggmap(FLmap, extent='normal')+
   ylab("Latitude") +
   xlab("Longitude")+
   labs(size="log(detections)")+
-  geom_path(data=dets3, aes(x=lon,y=lat,col=FishID))+
-  geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=FishID))
+  geom_path(data=dets3, aes(x=lon,y=lat,col=animal_id))+
+  geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=animal_id))
 perm_map
 
 # can simply save plots using output window, or to save high res plots:
@@ -129,14 +130,15 @@ dev.off()
 Let's look at maps by FishID to see indiviudal fish movement patterns.
 
 ~~~
-ggmap(FLmap, extent='normal')+
+movMap <- ggmap(FLmap, extent='normal')+
   coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
   ylab("Latitude") +
   xlab("Longitude")+
   labs(size="log(detections)")+
-  geom_path(data=dets3, aes(x=lon,y=lat,col=FishID))+
-  geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=FishID))+
-  facet_wrap(~FishID)
+  geom_path(data=dets3, aes(x=lon,y=lat,col=animal_id))+
+  geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=animal_id))+
+  facet_wrap(~animal_id)
+movMap
 ~~~
 {:.language-r}
 
@@ -184,7 +186,7 @@ dets5 <- rbind(tags2, dets4)
 dets5 <- dets5 %>% arrange(FishID, UTC)
 head(dets5)
 ~~~
-{:language-r}
+{:.language-r}
 
 Plot the result:
 ~~~
@@ -198,4 +200,4 @@ ggmap(FLmap, extent='normal')+
   geom_point(data=tags, aes(x=lon, y=lat),col="yellow")+
   facet_wrap(~FishID)
 ~~~
-{:language-r}
+{:.language-r}
