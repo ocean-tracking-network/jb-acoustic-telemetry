@@ -11,7 +11,7 @@ keypoints:
 ---
 
 ## Data Analysis Using GLATOS
-Data analysis is a process of inspecting, cleansing, transforming, and modeling data with the goal of discovering useful information, informing conclusions, and supporting decision-making [https://en.wikipedia.org/wiki/Data_analysis](https://en.wikipedia.org/wiki/Data_analysis).
+[Data analysis](https://en.wikipedia.org/wiki/Data_analysis "Wikipedia Data Analysis Page") is a process of inspecting, cleansing, transforming, and modeling data with the goal of discovering useful information, informing conclusions, and supporting decision-making.
 
 Basically, the point is to turn data into information and information into knowledge. There are many ways to look at and compare dependent and independent variables, find relations, and even create models and predict behaviours. But, we are only going to focus on analyzing time and location data in the simplest way.
 
@@ -33,11 +33,9 @@ detection_events  # Time Series Analysis & Lubridate
 ~~~
 {:.language-r}
 
-Time series show the when, the before, and the after for data points. The lubridate package is especially useful for handling time calculations.
+Time series show the when, the before, and the after for data points. The [Lubridate](https://lubridate.tidyverse.org "Lubridiate Homepage") package is especially useful for handling time calculations.
 
 Date-time data can be frustrating to work with in R. R commands for date-times are generally unintuitive and change depending on the type of date-time object being used. Moreover, the methods we use with date-times must be robust to time zones, leap days, daylight savings times, and other time related quirks, and R lacks these capabilities in some situations. Lubridate makes it easier to do the things R does with date-times and possible to do the things R does not.
-
-Source: [https://lubridate.tidyverse.org](https://lubridate.tidyverse.org)
 
 ~~~
 library(lubridate)
@@ -110,7 +108,7 @@ abacus_plot
 
 You can also plot your data against a map to give more geospatial context. Below is an example of a geospatial plot from plotly. The geo list sets the style and parameters for the map and will be passed into the layout function.
 
-The scope of the map will determine what boundaries are drawn. You can also change the projection of the map: https://plot.ly/r/reference/#layout-geo-projection
+The scope of the map will determine what boundaries are drawn. You can also change the projection of the map. [(Reference)](https://plot.ly/r/reference/#layout-geo-projection "Map Projection Reference")
 
 ~~~
 geo <- list(
@@ -143,7 +141,7 @@ map
 ~~~
 {:.language-r}
 
-Here is some Mapping related code that I stole from the Brownscombe lecture.
+Here is some Mapping related code courtesy of J. Brownscombe.
 
 ~~~
 dets <- read.csv("detections.csv") #detections from acoustic receivers
@@ -252,7 +250,7 @@ head(dets)
 ## MapBox
 Mapbox is a Live Location Platform that can serve up map tiles for use.
 
-You can create a free account and get an access token here: https://mapbox.com
+You can create a free account and get an access token [at the Mapbox site](https://mapbox.com, "Mapbox Home Page")
 
 Below we set the access token as an environment variable that Plotly can call.
 
@@ -261,7 +259,7 @@ Sys.setenv('MAPBOX_TOKEN' = 'your token here')
 ~~~
 {:.language-r}
 
-From there, we can just call the plot_mapbox() function and pass whatever arguments we need for the map. https://plot.ly/r/scattermapbox/
+From there, we can just call the [plot_mapbox()](https://plot.ly/r/scattermapbox/, "Plot_Mapbox reference") function and pass whatever arguments we need for the map.
 
 ~~~
 mapbox <- summary_data %>%
