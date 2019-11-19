@@ -12,6 +12,7 @@ keypoints:
 
 ## Summarise by FishID
 
+We can group our data by animal ID, letting us isolate individuals for summary stats, plotting and further analysis.
 ~~~
 str(dets3)
 FishIDsum <- dets3 %>% group_by(animal_id) %>%
@@ -25,8 +26,7 @@ FishIDsum
 
 ## Summarise by station:
 
-
-First we need a list of all stations:
+To group and summarise our data by station, we first need to find all unique station names and locations:
 ~~~
 head(Rxmeta)
 stations <- Rxmeta %>% select(station, lat, lon, depth, sub=sub_detail, hab=hab_detail)
@@ -34,8 +34,9 @@ head(stations)
 ~~~
 {:.language-r}
 
-Summarise detections:
-
+## Summarise detections:
+Create a new data product, det_days, that give you the unique dates that an animal was seen by a station. This summary
+can be used to calculate a residence index as in Kessel et al. 2017 (https://dx.doi.org/10.1007/s00300-015-1723-y)
 ~~~
 stationsum <- dets3 %>% group_by(station) %>%
   summarise(detections=length(animal_id),
@@ -43,7 +44,9 @@ stationsum <- dets3 %>% group_by(station) %>%
 ~~~
 {:.language-r}
 
-Merge with station list:
+## Merge with station list:
+
+We can then re-attach station summary information to the list of stations we made earlier.
 
 ~~~
 stations2 <- merge(stations, stationsum, all.x=TRUE, by="station")
@@ -52,7 +55,13 @@ stations2[1:10,]
 ~~~
 {:.language-r}
 
-Figure out number of days Rxs were in the water:
+# How many days were the Receivers in the water?:
+
+Residence Indices often must take into account the number of potential observation days. Using our deployment history,
+we can calculate the number of days the tag and receiver were deployed. The Receiver Efficiency Index (REI) described in
+Ellis et al. 2019 (https://doi.org/10.1016/j.fishres.2018.09.015) is a ratio useful for quantifying the relative importance/value of each receiver in a given array/cloud
+deployment, and requires similar input data. We can calculate it this way:
+
 ~~~
 head(Rxdeploy3)
 Rxdeploy3$deploy_time <- Rxdeploy3$recoverUTC-Rxdeploy3$deployUTC
@@ -69,7 +78,10 @@ stations2$REI <- stations2$REI/max(stations2$REI)*100
 ~~~
 {:.language-r}
 
-Generate summary table:
+
+## Station Summary Table Review
+
+Now we have a station summary dataframe with REI scoring and other summary information inline, from which we can derive some plots.
 ~~~
 stations2[1:20,]
 ~~~
@@ -79,17 +91,17 @@ stations2[1:20,]
 
 Abacus plot:
 ~~~
-#need to summarise by day to make less computationally intensive:
+# summarise by day to make less computationally intensive:
 head(dets3)
 dets3day <- dets3 %>% group_by(node, day, animal_id) %>% summarise(dets=length(animal_id))
 head(dets3day)
 
-#plot
+# plot
 library(ggplot2)
 ?ggplot()
 ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point()
 
-#add tagging datetimes:
+# add tagging datetimes:
 head(tags)
 ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point() +
   geom_point(data=tags, aes(x=datetimeESTEDT,y=FishID),col="black") +
@@ -100,12 +112,16 @@ ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point() +
 
 
 
-Make some spatial plots:
+## Spatial Plots:
+
+Summarise things by station and individual ID, and then plot a map of each animal path.
 
 ~~~
-#examine by station and FishID:
+# examine by station and FishID:
 stationFishID <- dets3 %>% group_by(station, animal_id) %>%
   summarise(lat=mean(lat), lon=mean(lon), dets=length(animal_id), logdets=log(length(animal_id)))
+
+# Peek at the first few rows
 head(stationFishID)
 
 perm_map <- ggmap(FLmap, extent='normal')+
@@ -142,8 +158,9 @@ movMap
 ~~~
 {:.language-r}
 
-Add the tagging locations into this. In order to generate a movement path from
-the tagging location we'll have to bind the tagging locations and detections data sets together
+Add the tagging locations to the plot. In order to generate a movement path from
+the tagging location we'll have to bind the tagging locations and detections data sets together on individual ID.
+OTN detection extracts have the tag release information directly in the detection extract.
 
 First, set up dataframes with same variables to combine:
 ~~~
