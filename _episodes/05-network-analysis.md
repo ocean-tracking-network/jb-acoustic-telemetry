@@ -68,7 +68,7 @@ receivers <- network_analysis_data %>%
 ~~~
 {:.language-r}
 
-Below we plot out the segments and verticews using plotly.
+Below we plot out the segments and vertices using plotly.
 
 ~~~
 Sys.setenv('MAPBOX_TOKEN' = 'your toke here')

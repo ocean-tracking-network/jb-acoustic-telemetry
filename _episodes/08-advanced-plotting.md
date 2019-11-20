@@ -10,7 +10,7 @@ keypoints:
 - "First key point. Brief Answer to questions. (FIXME)"
 ---
 
-## Exploring your dataset via this interactive map using plotly
+## Exploring your dataset with an interactive map
 
 
 ~~~

@@ -10,13 +10,11 @@ keypoints:
 - "First key point. Brief Answer to questions. (FIXME)"
 ---
 
-[VTrack](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html "VTrack Reference") has some cool tools including COA and brownian bridges.
+[VTrack](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html "VTrack Reference") has some cool tools including COA and Brownian bridges.
 
 # Setup data
 Needs to be in specific format to load an ATT object, including detection data, tag metadata, and station info. Check out
-https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html for specific data format requirements. GLATOS is capable of
-exporting their data to a format readable by VTrack.
-Needs to be in specific format to load an ATT object, including ddetection data, tag metadata, and station info. Specific data format requirements can be found in the VTrack Reference.
+[the VTrack reference](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html) for specific data format requirements. GLATOS is capable of exporting their data to a format readable by VTrack.
 
 
 Detections:
@@ -146,7 +144,7 @@ getAnywhere(dispersalSummary)
 ~~~
 {:.language-r}
 
-Calculate Centers of Activity (Simpfendorfer, C. A., M. R. Heupel, and R. E. Hueter. 2002.) https://doi.org/10.1139/f01-191
+Calculate Centers of Activity ([Simpfendorfer, C. A., M. R. Heupel, and R. E. Hueter. 2002.](https://doi.org/10.1139/f01-191))
 ~~~
 ?COA
 

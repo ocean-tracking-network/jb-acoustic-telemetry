@@ -36,7 +36,7 @@ head(stations)
 
 ## Summarise detections:
 Create a new data product, det_days, that give you the unique dates that an animal was seen by a station. This summary
-can be used to calculate a residence index as in Kessel et al. 2017 (https://dx.doi.org/10.1007/s00300-015-1723-y)
+can be used to calculate a residence index as in [Kessel et al. 2017](https://dx.doi.org/10.1007/s00300-015-1723-y)
 ~~~
 stationsum <- dets3 %>% group_by(station) %>%
   summarise(detections=length(animal_id),
@@ -59,8 +59,7 @@ stations2[1:10,]
 
 Residence Indices often must take into account the number of potential observation days. Using our deployment history,
 we can calculate the number of days the tag and receiver were deployed. The Receiver Efficiency Index (REI) described in
-Ellis et al. 2019 (https://doi.org/10.1016/j.fishres.2018.09.015) is a ratio useful for quantifying the relative importance/value of each receiver in a given array/cloud
-deployment, and requires similar input data. We can calculate it this way:
+[Ellis et al. 2019](https://doi.org/10.1016/j.fishres.2018.09.015) is a ratio useful for quantifying the relative importance/value of each receiver in a given array/cloud deployment, and requires similar input data. We can calculate it this way:
 
 ~~~
 head(Rxdeploy3)
@@ -114,7 +113,7 @@ ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point() +
 
 ## Spatial Plots:
 
-Summarise things by station and individual ID, and then plot a map of each animal path.
+Summarise data by station and individual ID, and then plot a map of each animal path.
 
 ~~~
 # examine by station and FishID:
