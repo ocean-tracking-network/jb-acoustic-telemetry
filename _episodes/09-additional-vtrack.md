@@ -10,13 +10,10 @@ keypoints:
 - "First key point. Brief Answer to questions. (FIXME)"
 ---
 
-VTrack has some cool tools including COA and brownian bridges
-
-Vtrack guide: https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html
+[VTrack](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html "VTrack Reference") has some cool tools including COA and brownian bridges.
 
 # Setup data
-Needs to be in specific format to load an ATT object, including ddetection data, tag metadata, and station info. Check out
-https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html for specific data format requirements
+Needs to be in specific format to load an ATT object, including ddetection data, tag metadata, and station info. Specific data format requirements can be found in the VTrack Reference.
 
 
 Detections:
@@ -55,7 +52,7 @@ tagsvtrack$sex <-"unknown"
 ~~~
 {:.language-r}
 
-Uses the tag expected life for data periods.. I elected to just use the periods between tag deployment and the last detection
+Uses the tag expected life for data periods. I elected to just use the periods between tag deployment and the last detection.
 
 ~~~
 Tagperiod <- detsf %>% group_by(FishID) %>% summarise(start=min(UTC),end=max(UTC)) %>% as.data.frame()
