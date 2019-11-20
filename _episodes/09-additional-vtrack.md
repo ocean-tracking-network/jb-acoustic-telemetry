@@ -10,14 +10,13 @@ keypoints:
 - "First key point. Brief Answer to questions. (FIXME)"
 ---
 
-VTrack has some cool tools including COA and Brownian bridges
-
-ATT/VTrack guide: https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html
+[VTrack](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html "VTrack Reference") has some cool tools including COA and brownian bridges.
 
 # Setup data
 Needs to be in specific format to load an ATT object, including detection data, tag metadata, and station info. Check out
 https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html for specific data format requirements. GLATOS is capable of
 exporting their data to a format readable by VTrack.
+Needs to be in specific format to load an ATT object, including ddetection data, tag metadata, and station info. Specific data format requirements can be found in the VTrack Reference.
 
 
 Detections:
@@ -56,7 +55,7 @@ tagsvtrack$sex <-"unknown"
 ~~~
 {:.language-r}
 
-Uses the tag expected life for data periods.. I elected to just use the periods between tag deployment and the last detection
+Uses the tag expected life for data periods. I elected to just use the periods between tag deployment and the last detection.
 
 ~~~
 Tagperiod <- detsf %>% group_by(FishID) %>% summarise(start=min(UTC),end=max(UTC)) %>% as.data.frame()
@@ -178,7 +177,7 @@ mcp_est
 ~~~
 {:.language-r}
 
-Estimate 20%, 50% and 95% Brownian Bridge Kernel Utilization Distribution ('BBKUD') contour areas and store polygons
+Estimate 20%, 50% and 95% Brownian Bridge Kernel Utilisation Distribution ('BBKUD') contour areas and store polygons
 ~~~
 BBkud_est<-HRSummary(COAdata,
                      projCRS=proj,

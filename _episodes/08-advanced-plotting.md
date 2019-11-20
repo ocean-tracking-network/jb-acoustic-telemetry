@@ -56,19 +56,19 @@ str(dets3)
 dets3$year <- strftime(dets3$UTC, format="%Y")
 dets3$month <- strftime(dets3$UTC, format="%Y-%m")
 
-P201819 <- dets3 %>% filter(year>"2017")
+plot_data <- dets3 %>% filter(year>"2017")
 ~~~
 {:.language-r}
 
 
 ## Plot and animate
 ~~~
-p <- ggplot(P201819) +
+p <- ggplot(plot_data) +
   geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkgreen") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
   #geom_sf(data = area, fill = 'white') +
-  geom_point(data=P201819, aes(lon, lat, col = FishID), size = 2) +
+  geom_point(data=plot_data, aes(lon, lat, col = FishID), size = 2) +
   coord_sf(xlim = c(-82.5, -81), ylim = c(24.2, 25.1)) +
   labs(title = '',
        subtitle = 'Date: {format(frame_time, "%b %Y")}',
