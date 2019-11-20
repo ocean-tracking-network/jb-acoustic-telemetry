@@ -10,9 +10,8 @@ keypoints:
 - "First key point. Brief Answer to questions. (FIXME)"
 ---
 
-## Interactive map using plotly
+## Exploring your dataset with an interactive map
 
-Note that plotly seems to have issues with ggmap with projections of data onto the satellite image. Let's just use base land layer:
 
 ~~~
 head(stations2)
@@ -44,6 +43,9 @@ ggplotly(p)
 
 ## Animations using gganimate
 
+We're going to animate individual animal paths, using the gganimate package
+First, subset the data (here as an example, filtering using a time-range to get everything after 2017).
+
 ~~~
 library(sf)
 library(gganimate)
@@ -59,7 +61,7 @@ plot_data <- dets3 %>% filter(year>"2017")
 {:.language-r}
 
 
-Plot and animate
+## Plot and animate
 ~~~
 p <- ggplot(plot_data) +
   geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkgreen") +
