@@ -10,10 +10,10 @@ Create a folder on your desktop called `acoustic-workshop`. Download the
 extract it to a folder on your desktop called `acoustic-workshop`. You should now have a folder 
 called `data` inside of the `acoustic-workshop` folder.
 
-### R version 3.6.x or better and RStudio
+### R version: 3.6.x or newer and RStudio
 
-Once RStudio is open, run this install script. It's best to run it line by line instead of all at once in case there are errors. 
-<b>Note:</b> When running through the installs, if you encounter a prompt asking you to upgrade packages. Choosing Option `3: None`, works in most situations.
+Open RStudio and run this install script. It's best to run it line by line instead of all at once in case there are errors. 
+<b>Note:</b> When running through the installs, you may encounter a prompt asking you to upgrade dependent packages. Choosing Option `3: None`, works in most situations and will prevent upgrades of packages you weren't explicitly looking to upgrade.
 ```r
 install.packages('ggplot2')
 install.packages('ggmap')
