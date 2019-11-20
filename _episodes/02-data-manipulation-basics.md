@@ -12,7 +12,7 @@ keypoints:
 
 ## Data Cleaning and Preprocessing
 
-When analyzing data, 80% of time is spent cleaning and manipulating data and only 20% actually analyzing it. For this reason, it is critical to become familiar with the data cleaning process and getting your data into a format that can be analyzed.Let's begin with reading in our data using GLATOS (which will be explained below).
+When analyzing data, 80% of time is spent cleaning and manipulating data and only 20% actually analyzing it. For this reason, it is critical to become familiar with the data cleaning process and getting your data into a format that can be analyzed. Let's begin with reading in our data using GLATOS (which will be explained below).
 
 
 ~~~

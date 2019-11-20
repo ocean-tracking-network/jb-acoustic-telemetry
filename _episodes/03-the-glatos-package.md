@@ -19,7 +19,7 @@ The notebook concept's a bit new to the glatos package, so be aware that its fun
 
 ## False Detection Filtering using the Pincock algorithm.
 
-Doug Pincock defined a temporal threshhold algorithm to determine whether detections in a set of detections from a station could be considered real (https://www.vemco.com/pdf/false_detections.pdf). The thrust of the filter is that a single detection at a station could very well be false, and it would require multiple detections of a tag by a receiver within a certain time frame to confirm that tag actually existed and was pinging at that station, and its ID was not the result of a collision event between two other tags.
+Doug Pincock defined a temporal threshhold algorithm to determine whether detections in a set of detections from a station could be considered real ([Source](https://www.vemco.com/pdf/false_detections.pdf "Link to Pincock Paper")). The thrust of the filter is that a single detection at a station could very well be false, and it would require multiple detections of a tag by a receiver within a certain time frame to confirm that tag actually existed and was pinging at that station, and its ID was not the result of a collision event between two other tags.
 
 Tag collision resulting in no detection:
 

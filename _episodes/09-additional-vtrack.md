@@ -12,13 +12,11 @@ keypoints:
 - "VTrack provides robust options for more advanced visualization."
 ---
 
-VTrack has some cool tools including COA and brownian bridges
-
-Vtrack guide: https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html
+[VTrack](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html "VTrack Reference") has some cool tools including COA and Brownian bridges.
 
 # Setup data
-Needs to be in specific format to load an ATT object, including ddetection data, tag metadata, and station info. Check out
-https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html for specific data format requirements
+Needs to be in specific format to load an ATT object, including detection data, tag metadata, and station info. Check out
+[the VTrack reference](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html) for specific data format requirements. GLATOS is capable of exporting their data to a format readable by VTrack.
 
 
 Detections:
@@ -57,7 +55,7 @@ tagsvtrack$sex <-"unknown"
 ~~~
 {:.language-r}
 
-Uses the tag expected life for data periods.. I elected to just use the periods between tag deployment and the last detection
+Uses the tag expected life for data periods. I elected to just use the periods between tag deployment and the last detection.
 
 ~~~
 Tagperiod <- detsf %>% group_by(FishID) %>% summarise(start=min(UTC),end=max(UTC)) %>% as.data.frame()
@@ -109,13 +107,15 @@ ATTdataBTT <- setupData(Tag.Detections = detsfvtrack, Tag.Metadata = tagsvtrack,
 ~~~
 {:.language-r}
 
-Can be used to make an abacus plot:
+## VTrack functionality:
+
+### Can be used to make an abacus plot:
 ~~~
 abacusPlot(ATTdataBTT)
 ~~~
 {:.language-r}
 
-Generate detection summary stats:
+### Generate detection summary stats:
 ~~~
 detSum<-detectionSummary(ATTdataBTT,
                          sub = "%Y-%m")
@@ -124,29 +124,29 @@ detSum$Overall
 {:.language-r}
 
 
-Calculate dispersal summary info
+### Calculate dispersal summary info
 ~~~
 dispSum<-dispersalSummary(ATTdataBTT)
 ~~~
 {:.language-r}
 
-Just dispersal data:
+### Just dispersal data:
 ~~~
 dispSum2 <- dispSum %>% filter(Consecutive.Dispersal >0)
 ~~~
 {:.language-r}
 
 
-The glatos-based detection events above is good for calculatating residency at receivers. This gives you
-more info on what the fish were doing in between.
+The glatos-based detection events above is an intermediate data summary that is useful for calculating residency at
+receivers. This gives you more info on what the fish were doing in between.
 
-in case you're ever interested in explore the mechanics behind functions:
+In case you're ever interested in exploring the mechanics behind the functions:
 ~~~
 getAnywhere(dispersalSummary)
 ~~~
 {:.language-r}
 
-Calculate Centers of Activity (Simpfendorfer, C. A., M. R. Heupel, and R. E. Hueter. 2002.)
+Calculate Centers of Activity ([Simpfendorfer, C. A., M. R. Heupel, and R. E. Hueter. 2002.](https://doi.org/10.1139/f01-191))
 ~~~
 ?COA
 
@@ -156,7 +156,7 @@ warnings()
 {:.language-r}
 
 
-Calcuate MCPL:
+Calculate Minimum Convex Polygons:
 ~~~
 library(rgdal)
 proj<-CRS("+proj=longlat +datum=WGS84")
@@ -204,7 +204,7 @@ names(fullstack) <-
 ~~~
 {:.language-r}
 
-Lets plot the overall BBKUD for Tag.ID `77523307`
+Lets plot the overall BBKUD for a given individual
 ~~~
 fulltag <- fullstack$`P91`
 values(fulltag)[values(fulltag) > 96] <- NA
