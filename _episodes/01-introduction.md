@@ -3,11 +3,14 @@ title: "Introduction to Acoustic Telemetry"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "What is acoustic telemetry?"
+- "How can I gather data to analyze?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Explain acoustic telemetry in a general sense."
+- "Provide context for OTN's mission."
+- "Describe some data collection steps."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "Acoustic telemetry is the study of fish movement by audio tracking."
 ---
 
 ## What is Acoustic Telemetry?
