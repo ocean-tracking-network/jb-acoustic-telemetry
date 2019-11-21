@@ -3,11 +3,18 @@ title: "The GLATOS Package"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "What is the GLATOS package?"
+- "What are false detections?"
+- "How can I filter false detections out of my data?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Introduce the GLATOS package."
+- "Explain how false detections are produced."
+- "Introduce the Pincock algorithm."
+- "Demonstrate how the Pincock algorithm can filter false detections."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "The GLATOS package is a collection of data analysis and visualization tools."
+- "False detections are produced by tag collisions."
+- "The Pincock algorithm filters out false detections by comparing pings across nearby stations."
 ---
 
 ## GLATOS
@@ -37,4 +44,5 @@ The result of false_detections() adds a passed_filter column to the table. We ca
 filtered_detections <- nr_detections_with_filter %>% filter(passed_filter != FALSE)
 filtered_detections
 ~~~
+
 {:.language-r}
