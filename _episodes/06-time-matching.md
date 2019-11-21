@@ -4,12 +4,13 @@ teaching: 0
 exercises: 0
 questions:
 - "What is time matching?"
-- "How does GLATOS perform time matching?"
+- "How do we perform time matching?"
 objectives:
-- "Explain time matching with the GLATOS package."
+- "Explain time matching."
 - "Step through the process of matching detections with times."
 keypoints:
-- "(Left for Naomi -- BD20191121)"
+- "Time matching links station deployment information to verify that all detections fall within the deployment period."
+- "Generate a dataset for the station info in order to group detections."
 ---
 
 ## Assigning DateTimes to Receivers

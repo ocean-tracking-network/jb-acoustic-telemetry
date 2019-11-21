@@ -4,13 +4,14 @@ teaching: 0
 exercises: 0
 questions:
 - "What is network analysis?"
-- "How does the GLATOS package facilitate network analysis?"
+- "How do these packages facilitate network analysis?"
 objectives:
-- "Show how to use GLATOS and plotly to create a network graph."
+- "Show how to use tools and plotly to create a network graph."
 - "Show how to display the plotted network."
 - "Demonstrate how to integrate station detections with a network."
 keypoints:
-- "(Leaving for Naomi to answer -- BD20191121)"
+- "Network analysis is the interpretation of connections between individual movements and receivers."
+- "A data frame is created and cleaned to facilitate network analysis."
 ---
 
 ## Network Analysis

@@ -11,7 +11,8 @@ objectives:
 - "Demonstrate how grouped data can be plotted."
 - "Demonstrate how grouped data can be plotted on a map."
 keypoints:
-- "First key point. Brief Answer to questions. (Leaving this for Naomi since I'm not sure I can put in the right answers -- BD20191121)"
+- "Multiple tools agregated to allow for data ingestion and filtering."
+- "Provides functionality for creating basic plots from GLATOS formatted data."
 ---
 
 ## Data Analysis Using GLATOS
