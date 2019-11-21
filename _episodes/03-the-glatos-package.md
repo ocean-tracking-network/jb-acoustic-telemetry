@@ -37,4 +37,5 @@ The result of false_detections() adds a passed_filter column to the table. We ca
 filtered_detections <- nr_detections_with_filter %>% filter(passed_filter != FALSE)
 filtered_detections
 ~~~
+
 {:.language-r}
