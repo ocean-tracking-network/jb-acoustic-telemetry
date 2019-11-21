@@ -3,11 +3,16 @@ title: "Summarising and Plotting Data"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "What are some of the ways to summarise my data?"
+- "How can I make plots of the summarised data?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Show how to summarise data by FishID."
+- "Show how to summarise data by station."
+- "Use ggplot and ggmap to display plots and maps of the data."
+- "Use ggmap to track individual fish movement."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "Data can be summarised by fish ID, station or detection."
+- "Data can be plotted into an abacus plot by day, or can be mapped based on the station information."
 ---
 
 ## Summarise by FishID
