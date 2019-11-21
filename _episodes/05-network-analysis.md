@@ -3,11 +3,14 @@ title: "Network Analysis"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "What is network analysis?"
+- "How does the GLATOS package facilitate network analysis?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Show how to use GLATOS and plotly to create a network graph."
+- "Show how to display the plotted network."
+- "Demonstrate how to integrate station detections with a network."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "(Leaving for Naomi to answer -- BD20191121)"
 ---
 
 ## Network Analysis

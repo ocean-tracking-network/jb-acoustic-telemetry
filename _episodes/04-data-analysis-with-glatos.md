@@ -11,7 +11,7 @@ objectives:
 - "Demonstrate how grouped data can be plotted."
 - "Demonstrate how grouped data can be plotted on a map."
 keypoints:
-- "First key point. Brief Answer to questions. (Leaving this for Naomi since I'm not sure I can put in the right answerd -- BD20191121)"
+- "First key point. Brief Answer to questions. (Leaving this for Naomi since I'm not sure I can put in the right answers -- BD20191121)"
 ---
 
 ## Data Analysis Using GLATOS
