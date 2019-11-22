@@ -22,7 +22,12 @@ dets <- read_otn_detections(det_file)
 Rxdeploy <- read_otn_deployments(rcv_file)
 
 
-dets_with_stations <- left_join(dets, Rxdeploy, by=c("station"))
+dets_with_stations <- left_join(
+  dets %>% rename(
+    deploy_long_det = deploy_long,
+    deploy_lat_det = deploy_lat
+  ), 
+  Rxdeploy, by=c("station"))
 dets_with_stations <- dets_with_stations %>% 
   filter(detection_timestamp_utc >= deploy_date_time, detection_timestamp_utc <= recover_date_time)
 

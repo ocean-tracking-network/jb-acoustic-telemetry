@@ -58,27 +58,44 @@ stations2[1:10,]
 
 ## Plotting data
 
-Abacus plot:
+Abacus plots:
+
+Simple plots using the glatos library.
+
 ~~~
-# summarise by day to make less computationally intensive:
-head(dets3)
-dets3day <- dets3 %>% group_by(node, day, animal_id) %>% summarise(dets=length(animal_id))
-head(dets3day)
+library(glatos)
 
-# plot
-library(ggplot2)
-?ggplot()
-ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point()
-
-# add tagging datetimes:
-head(tags)
-ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point() +
-  geom_point(data=tags, aes(x=datetimeESTEDT,y=FishID),col="black") +
-  scale_color_brewer()
+glatos::abacus_plot(dets_with_stations, location_col =  "station") # Plot by station
+glatos::abacus_plot(dets_with_stations, location_col =  "animal_id") # Plot by animal
 ~~~
 {:.language-r}
 
+Nicer plots using the ggplot library.
 
+~~~
+library(dplyr)
+library(ggplot2)
+library(viridis)
+
+plot_data <- dets %>% dplyr::select(animal_id, station, detection_timestamp_utc)
+
+abacus_animals <- ggplot(data=plot_data, aes(x=detection_timestamp_utc, y=animal_id, col=station))+
+  geom_point()+
+  ggtitle("Detections by animal")+
+  theme(plot.title = element_text(face="bold", hjust = 0.5))+
+  scale_color_viridis(discrete= TRUE)
+
+abacus_animals
+
+abacus_stations <- ggplot(data=plot_data,  aes(x=detection_timestamp_utc, y=station, col=animal_id))+
+  geom_point()+
+  ggtitle("Detections by station")+
+  theme(plot.title = element_text(face="bold", hjust = 0.5))+
+  scale_color_viridis(discrete= TRUE)
+
+abacus_stations
+~~~
+{:.language-r}
 
 
 ## Spatial Plots:
@@ -86,19 +103,30 @@ ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point() +
 Summarise data by station and individual ID, and then plot a map of each animal path.
 
 ~~~
-# examine by station and FishID:
-stationFishID <- dets3 %>% group_by(station, animal_id) %>%
-  summarise(lat=mean(lat), lon=mean(lon), dets=length(animal_id), logdets=log(length(animal_id)))
+library(ggmap)
 
+# examine by station and FishID:
+stationFishID <- dets_with_stations %>% group_by(station, animal_id) %>%
+  summarise(lat=mean(deploy_lat), lon=mean(deploy_long), dets=length(animal_id), logdets=log(length(animal_id)))
+  
 # Peek at the first few rows
 head(stationFishID)
 
-perm_map <- ggmap(FLmap, extent='normal')+
-  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+base <- get_stamenmap(
+  bbox = c(
+    left = min(dets_with_stations$deploy_long),
+    bottom = min(dets_with_stations$deploy_lat ), 
+    right = max(dets_with_stations$deploy_long), 
+    top = max(dets_with_stations$deploy_lat)
+  ),
+  maptype = "terrain-background", 
+  crop = FALSE,
+  zoom = 8
+)
+perm_map <- ggmap(base, extent='normal')+
   ylab("Latitude") +
   xlab("Longitude")+
   labs(size="log(detections)")+
-  geom_path(data=dets3, aes(x=lon,y=lat,col=animal_id))+
   geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=animal_id))
 perm_map
 
