@@ -3,11 +3,16 @@ title: "Data Analysis Using GLATOS"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "How does the GLATOS package facilitate data analysis?"
+- "How does the GLATOS package facilitate data visualization?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Demonstrate how to clean and filter raw data with the GLATOS package."
+- "Show how summarise() can be used to group data."
+- "Demonstrate how grouped data can be plotted."
+- "Demonstrate how grouped data can be plotted on a map."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "Multiple tools agregated to allow for data ingestion and filtering."
+- "Provides functionality for creating basic plots from GLATOS formatted data."
 ---
 
 ## Data Analysis Using GLATOS

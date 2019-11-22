@@ -3,11 +3,14 @@ title: "Matching Detections to Times"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "What is time matching?"
+- "How do we perform time matching?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Explain time matching."
+- "Step through the process of matching detections with times."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "Time matching links station deployment information to verify that all detections fall within the deployment period."
+- "Generate a dataset for the station info in order to group detections."
 ---
 
 ## Assigning DateTimes to Receivers
@@ -39,7 +42,7 @@ head(dets)
 
 depl_file <- system.file("extdata", "hfx_deployments.csv",
                          package = "glatos")
-Rxdeploy2 <- glatos::read_otn_deployments(depl_file) 
+Rxdeploy2 <- glatos::read_otn_deployments(depl_file)
 
 #det has all Receiver SN (character) and hour (posix). do the same with Rxdeploy2:
 head(Rxdeploy2)
@@ -75,8 +78,8 @@ Make a time variable for whole study period:
 
 ~~~
 DT <- data.frame(hour=seq(
-  from=min(Rxdeploy3$deployUTChour, na.rm = TRUE), 
-  to=max(Rxdeploy3$recoverUTChour, na.rm = TRUE), 
+  from=min(Rxdeploy3$deployUTChour, na.rm = TRUE),
+  to=max(Rxdeploy3$recoverUTChour, na.rm = TRUE),
   by="hour")
 )
 str(DT)

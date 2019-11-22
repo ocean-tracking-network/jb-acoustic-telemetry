@@ -3,11 +3,17 @@ title: "Data Manipulation Basics"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "How do I load data?"
+- "How do I clean data?"
+- "How can I inspect data?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Explain data cleaning as a component of analysis."
+- "Demonstrate read.csv() as a tool for loading data."
+- "Explain the different kinds of files in which telemetry data is stored."
+- "Use head, tail, str, and indexing to display loaded telemetry data."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "read.csv() can be used to load data."
+- "head, tail, and str() can be used to inspect data."
 ---
 
 ## Data Cleaning and Preprocessing
