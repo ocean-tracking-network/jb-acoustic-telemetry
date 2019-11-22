@@ -93,62 +93,7 @@ network <- network_analysis_data %>%
                                      lon = ~median(longitude)),
                       style='light'
             )
-      )  
+      )
+network  
 ~~~
 {:.language-r}
-
-Show the completed network graph.
-
-~~~
-network  library(cowsay)
-cowsay::say("Any questions?",by="shark",)
-~~~
-{:.language-r}
-
-## Assigning station info to detections
-
-First thing we need to do is figure out which station each receiver was at based on it's serial number
-documented in Rxdeploy:
-
-~~~
-head(Rxdeploy)
-~~~
-{:.language-r}
-
-
-We have deployment and recovery datetimes, which need to be posix. Also need to combine the
-receiver model and serial number to match into detections:
-
-~~~
-#Receiver number:
-Rxdeploy$Receiver <- paste(Rxdeploy$INS_MODEL_NO, Rxdeploy$INS_SERIAL_NO, sep="-")
-head(Rxdeploy)
-
-#datetimes:
-Rxdeploy$deployESTEDT <- as.POSIXct(Rxdeploy$DEPLOY_DATE_TIME....yyyy.mm.ddThh.mm.ss.,
-                                    tz="EST5EDT", format="%Y-%m-%dT%H:%M:%S")
-Rxdeploy$recoverESTEDT <- as.POSIXct(Rxdeploy$RECOVER_DATE_TIME..yyyy.mm.ddThh.mm.ss.,
-                                    tz="EST5EDT", format="%Y-%m-%dT%H:%M:%S")
-
-#convert to UTC:
-Rxdeploy$deployUTC <- strftime(Rxdeploy$deployESTEDT, tz="UTC", format="%Y-%m-%d %H:%M:%S")
-Rxdeploy$deployUTC <- as.POSIXct(Rxdeploy$deployUTC, tz="UTC", format="%Y-%m-%d %H:%M:%S")
-Rxdeploy$recoverUTC <- strftime(Rxdeploy$recoverESTEDT, tz="UTC", format="%Y-%m-%d %H:%M:%S")
-Rxdeploy$recoverUTC <- as.POSIXct(Rxdeploy$recoverUTC, tz="UTC", format="%Y-%m-%d %H:%M:%S")
-
-head(Rxdeploy)
-~~~
-{:.language-r}
-
-Let's clean this dataframe up with dplyr:
-
-~~~
-library(dplyr)
-Rxdeploy2 <- Rxdeploy %>% select(station=STATION_NO, Receiver, deployUTC, Recovered=RECOVERED..y.n.l., recoverUTC,
-                                 Downloaded=DATA_DOWNLOADED..y.n.,lat=DEPLOY_LAT, lon=DEPLOY_LONG, depth=BOTTOM_DEPTH)
-head(Rxdeploy2)
-~~~
-{:.language-r}
-
-Much better. We need to assign the station number to detections based on Receiver number and the time it was there.
-This is a complicated data problem...

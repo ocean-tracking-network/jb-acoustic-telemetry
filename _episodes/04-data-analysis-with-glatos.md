@@ -22,7 +22,7 @@ library(dplyr)
 library(glatos)
 library(stringr)
 
-detections_path <- system.file('extdata', 'blue_shark_detections.csv', package ='glatos')
+detections_path <- file.path('data', 'detections.csv')
 detections <- glatos::read_otn_detections(detections_path)
 detections <- detections %>% filter(!stringr::str_detect(unqdetecid, "release"))
 detections <- glatos::false_detections(detections, tf = 3600)
@@ -49,13 +49,13 @@ Now that we have an interval column, we can go row by row and look at each locat
 
 ~~~
 for(event in detection_events$event) {
-
     detection_events$overlaps_with[event] = paste( # We use paste to create a string of other events
-                                                which(detection_events$location == detection_events$location[event] &  # Make sure that the location is the same
-                                                       detection_events$event != event &  # Make sure the event is not the same
-                                                       lubridate::int_overlaps(detection_events$detection_interval[event], detection_events$detection_interval) # We can use lubridate's int_overlaps function to find the overlapping events
-                                                     ),
-                                                collapse=",")
+        which(detection_events$location == detection_events$location[event] &  # Make sure that the location is the same
+            detection_events$event != event &  # Make sure the event is not the same
+            lubridate::int_overlaps(detection_events$detection_interval[event], detection_events$detection_interval) 
+            # We can use lubridate's int_overlaps function to find the overlapping events
+        ),
+        collapse=",")
 }
 
 detection_events
@@ -141,61 +141,6 @@ map
 ~~~
 {:.language-r}
 
-Here is some Mapping related code courtesy of J. Brownscombe.
-
-~~~
-dets <- read.csv("detections.csv") #detections from acoustic receivers
-Rxdeploy <- read.csv("Rx_deployments.csv") #receiver station info
-Rxmeta <- read.csv("Rx_metadata.csv") #receiver station info
-tags <- read.csv("tag_info.csv") #tagged fish data
-
-
-#check out the data (these are all data frames by default):
-head(dets)
-tail(dets)
-str(dets)
-dets[1:10,]
-
-head(Rxdeploy)
-head(Rxmeta)
-head(tags)
-~~~
-{:.language-r}
-
-The above code is duplicated in lesson 3, so we should probably figure out a better way to consolidate all this.
-
-Notice the variables and their data type (important - google data types in R if unfamiliar)
-
-Clearly we need to combine the above 4 dataframes in various ways to do anything with these data
-Let's grease the wheels and check out fish tagging and receiver locations:
-
-I like to use google maps to plot on for basic visualization. Google recently made it a little trickier to do this
-because you have to go online and register a 'project' with them to get an API code. So this code will not work for
-you unless you do that and get your API code that goes beside 'key' below.
-
-[Here's the RData for the google map](https://github.com/ocean-tracking-network/jb-acoustic-telemetry/raw/gh-pages/Acoustic%20telemetry%20workshop%20workspace.RData)
-
-~~~
-library(ggmap)
-
-# register_google(key = "")
-FLmap <- get_googlemap(center = c(lon=-81.7, lat=24.8),
-                        zoom = 8, size = c(640, 640), scale = 4,
-                        maptype = c("satellite"))
-
-
-#just load in the map from a workspace I provided (you need to change this to your working directory info)
-load("~/Desktop/workshops/Acoustic telemetry workshop Dal 2019/Acoustic telemetry workshop workspace.RData")
-
-ggmap(FLmap, extent='normal')+
-  scale_x_continuous(limits=c(-82.6, -80.1))+
-  scale_y_continuous(limits=c(24.2, 25.5))+
-  ylab("Latitude") +
-  xlab("Longitude")+
-  geom_point(data=Rxmeta, aes(x=lon,y=lat), col="red",size=2)+
-  geom_point(data=tags,aes(x=lon,y=lat), col="yellow", size=1)
-~~~
-{:.language-r}
 
 In order to use dets in a meaningful way, we'll need to assign station deployments, metadata, and fish tagging
 info to them.
@@ -210,42 +155,17 @@ str(tags)
 {:.language-r}
 
 Let's assign FishID, tagging date (datetime), and fork length (FLmm) to detections.
-but first, we'll deal with dates really quickly:
-
-~~~
-#date/times need to be converted to a POSIXct object to be manipulated and plotted:
-tags$datetimeESTEDT <- as.POSIXct(tags$datetime, tz="EST5EDT", format="%d-%m-%Y %H:%M")
-str(tags)
-
-#convert to UTC time:
-tags$datetimeUTC <- as.POSIXct(strftime(tags$datetimeESTEDT, tz="UTC", format="%Y-%m-%d %H:%M:%S"))
-head(tags)
-~~~
-{:.language-r}
-
-
-
-Now we can assign above variables from tags to dets using the merge function:
+We can assign above variables from tags to dets using the merge function:
 
 ~~~
 ?merge
-dets2 <- merge(dets, tags, by="Transmitter", all.x=TRUE)
+dets2 <- merge(dets, tags, by="tagname", all.x=TRUE)
 head(dets2)
 ~~~
 {:.language-r}
 
 Now we would have to clean this dataset up quite a bit.
 
-Another option is to use match:
-
-~~~
-dets$FishID <- tags$FishID[match(dets$Transmitter, tags$Transmitter)]
-dets$FLmm <- tags$FLmm[match(dets$Transmitter, tags$Transmitter)]
-dets$Tagdate <- tags$datetimeUTC[match(dets$Transmitter, tags$Transmitter)]
-anyNA(dets$FishID)
-head(dets)
-~~~
-{:.language-r}
 
 ## MapBox
 Mapbox is a Live Location Platform that can serve up map tiles for use.
