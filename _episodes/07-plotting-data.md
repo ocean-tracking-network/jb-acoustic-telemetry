@@ -40,6 +40,8 @@ can be used to calculate a residence index as in [Kessel et al. 2017](https://dx
 ~~~
 stationsum <- dets_with_stations %>% group_by(station) %>%
   summarise(detections=length(animal_id),
+            start=min(detection_timestamp_utc),
+            end=max(detection_timestamp_utc),
             uniqueID=length(unique(animal_id)), det_days=length(unique(as.Date(detection_timestamp_utc)))) %>% as.data.frame()
 ~~~
 {:.language-r}
@@ -51,6 +53,7 @@ We can then re-attach station summary information to the list of stations we mad
 ~~~
 stations2 <- merge(stations, stationsum, all.x=TRUE, by="station")
 stations2 <- stations2 %>% filter(detections > 0) # Filter out stations with no detections
+stations2 <- stations2 %>% filter (deploy_date_time <= start & recover_date_time >= end) %>% select(-start, -end)
 stations2[1:10,]
 ~~~
 {:.language-r}
@@ -108,7 +111,7 @@ library(ggmap)
 # examine by station and FishID:
 stationFishID <- dets_with_stations %>% group_by(station, animal_id) %>%
   summarise(lat=mean(deploy_lat), lon=mean(deploy_long), dets=length(animal_id), logdets=log(length(animal_id)))
-  
+
 # Peek at the first few rows
 head(stationFishID)
 
