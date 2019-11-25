@@ -147,7 +147,7 @@ dev.off()
 
 ## Using maps to track movement patterns
 
-Let's look at maps by FishID to see indiviudal fish movement patterns.
+Let's look at maps by FishID to see individual fish movement patterns.
 
 ~~~
 movMap <- ggmap(FLmap, extent='normal')+
@@ -173,7 +173,8 @@ head(tags)
 ~~~
 {:.language-r}
 
-Then, set up detections for combination
+Then, set up detections for combination:
+
 ~~~
 dets4 <- dets3 %>% select(Receiver, Transmitter, FishID, FLmm, UTC, Tagdate, station, lat, lon)
 dets4$tagloc <-"n"
@@ -181,6 +182,7 @@ dets4$tagloc <-"n"
 {:.language-r}
 
 Add tag locations:
+
 ~~~
 tags2 <- tags
 tags2$tagloc <-"y"
@@ -194,6 +196,7 @@ tags2 <- tags2 %>% select(Receiver,Transmitter, FishID, FLmm, UTC, Tagdate, stat
 {:.language-r}
 
 Check the data before you plot:
+
 ~~~
 head(tags2)
 head(dets4)
@@ -201,6 +204,7 @@ head(dets4)
 {:.language-r}
 
 Combine the dataframes:
+
 ~~~
 dets5 <- rbind(tags2, dets4)
 #arrange by fishID and time
@@ -210,6 +214,7 @@ head(dets5)
 {:.language-r}
 
 Plot the result:
+
 ~~~
 ggmap(FLmap, extent='normal')+
   coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+

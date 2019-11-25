@@ -97,7 +97,7 @@ Plotting is necessary for most research and analysis. It's just an easier way fo
 
 We will be using Plotly, a plotting package that allows for exports and interactivity.
 
-We will create an abacus plot first. An abacus plot will show us a timline of what animal is seen when by the receivers. We put detection_timestamp_utc on the x axis and the animal_id on the y axis.
+We will create an abacus plot first. An abacus plot will show us a timeline of what animal is seen when by the receivers. We put detection_timestamp_utc on the x axis and the animal_id on the y axis.
 
 ~~~
 library(plotly)
@@ -227,8 +227,6 @@ tags$datetimeUTC <- as.POSIXct(strftime(tags$datetimeESTEDT, tz="UTC", format="%
 head(tags)
 ~~~
 {:.language-r}
-
-
 
 Now we can assign above variables from tags to dets using the merge function:
 
