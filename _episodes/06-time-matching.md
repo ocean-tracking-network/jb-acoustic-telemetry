@@ -96,6 +96,7 @@ head(DT2)
 {:.language-r}
 
 Reduce down to just hours between deployment and recovery:
+
 ~~~
 DT3 <- DT2 %>% filter(hour>=deployUTChour & hour<=recoverUTChour)
 head(DT3)
@@ -104,13 +105,14 @@ rm(DT2) #removes object from R environment
 {:.language-r}
 
 We can now summarise the data:
+
 ~~~
 DT3sum <- DT3 %>% group_by(station, deployUTChour) %>% summarise(Recoverhour=mean(recoverUTChour), count=length(hour)) %>% ungroup()
 DT3sum #notice this is a tibble
 ~~~
 {:.language-r}
 
-Now, join det with DT3 matching SN and hour
+Now, join det with DT3 matching SN and hour:
 
 ~~~
 head(dets)
@@ -119,7 +121,7 @@ head(dets2)
 ~~~
 {:.language-r}
 
-Are there any detections occuring oustide of deployment periods? We can check.
+Are there any detections occurring outside of deployment periods? We can check.
 
 ~~~
 anyNA(dets2$station)
@@ -128,12 +130,14 @@ anyNA(dets2$station)
 
 Chances are the first time there will be, which could just be from being around transmitters or tx receivers outside the water.
 Check them out to see if there's issues:
+
 ~~~
 issues <- dets2 %>% filter(is.na(dets2$station))
 ~~~
 {:.language-r}
 
-Remove NAs in station (ie detections that theortically occured outside of deployment periods). Also remove some excessive deployment info:
+Remove NAs in station (ie detections that theoretically occurred outside of deployment periods). Also remove some excessive deployment info:
+
 ~~~
 dets2 <- dets2 %>% filter(!is.na(station)) %>% select(-X, -Recovered, -Downloaded, -Date.and.Time..UTC.,-Transmitter.Name,
                           -Transmitter.Serial,-recoverUTC, -deployUTChour, -recoverUTChour,

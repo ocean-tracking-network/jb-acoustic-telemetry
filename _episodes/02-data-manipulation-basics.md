@@ -32,11 +32,11 @@ data
 ~~~
 {: .language-r}
 
-load data.
+Load data.
 This enables collapsing blocks of code using the drop arrow on the left
 
 Acoustic telemetry data are commonly stored in 4 different files:
-1. detections
+1. Detections
 2. Receiver deployment information
 3. Receiver metadata
 4. Tagging information
@@ -49,7 +49,7 @@ tags <- read.csv("tag_info.csv") #tagged fish data
 ~~~
 {:.language-r}
 
-check out the data (these are all data frames by default):
+Check out the data (these are all data frames by default):
 
 ~~~
 head(dets)
@@ -64,7 +64,7 @@ head(tags)
 {:.language-r}
 
 
-notice the variables and their data type (important - google data types in R if unfamiliar)
+Notice the variables and their data type (important - google data types in R if unfamiliar).
 
-clearly we need to combine the above 4 dataframes in various ways to do anything with these data
+Clearly we need to combine the above 4 dataframes in various ways to do anything with these data
 let's grease the wheels and check out fish tagging and receiver locations:

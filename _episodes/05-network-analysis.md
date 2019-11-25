@@ -120,7 +120,7 @@ head(Rxdeploy)
 {:.language-r}
 
 
-We have deployment and recovery datetimes, which need to be posix. Also need to combine the
+We have deployment and recovery dates and times, which need to be posix. Also, we need to combine the
 receiver model and serial number to match into detections:
 
 ~~~
