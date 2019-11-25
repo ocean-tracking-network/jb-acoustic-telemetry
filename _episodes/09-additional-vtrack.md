@@ -14,94 +14,22 @@ keypoints:
 
 # Setup data
 Needs to be in specific format to load an ATT object, including detection data, tag metadata, and station info. Check out
-[the VTrack reference](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html) for specific data format requirements. GLATOS is capable of exporting their data to a format readable by VTrack.
-
-
-Detections:
+[the VTrack reference](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html) for specific data format requirements. GLATOS is capable of exporting their data to a format readable by VTrack. Conversion of OTN data requires data from the [OTN ERDDAP server](https://members.oceantrack.org/erddap/tabledap/index.html?page=1&itemsPerPage=1000) Data can be found at the following links: [Animals](https://members.oceantrack.org/erddap/tabledap/otn_aat_animals.html), [Receivers](https://members.oceantrack.org/erddap/tabledap/otn_aat_receivers.html), and [Tag Releases](https://members.oceantrack.org/erddap/tabledap/otn_aat_tag_releases.html).
 
 ~~~
-head(detsf)
-detsfvtrack <- detsf %>% rename(Latitude=lat, Longitude=lon, 'Station.Name'=station)
-detsfvtrack$'Date.and.Time..UTC.' <- detsfvtrack$UTC
-detsfvtrack$'Sensor.Value' <- as.integer("")
-detsfvtrack$'Sensor.Unit' <- as.factor("")
-detsfvtrack$Station.Name <- as.factor(detsfvtrack$Station.Name)
-detsfvtrack$Receiver <- as.factor(detsf$station)
-head(detsfvtrack)
-detsfvtrack <- detsfvtrack %>% select('Date.and.Time..UTC.', Receiver, Transmitter, 'Sensor.Value', 'Sensor.Unit',
-                                  'Station.Name', Latitude, Longitude)
-
-head(detsfvtrack)
-str(detsfvtrack)
-~~~
-{:.language-r}
+# files retrived from OTN ERDDAP server
+att_ani_path <- file.path('data', 'otn_att_animals.csv') 
+att_dpl_path <- file.path('data', 'otn_att_receivers.csv') #
+att_tag_path <- file.path('data', 'otn_att_tag_releases.csv')
 
 
-Tag data:
-~~~
-head(tags2)
-tagsvtrack <- tags2 %>% rename(tag_id=FishID, transmitter_id=Transmitter, release_latitude=lat, release_longitude=lon,
-                                ReleaseDate=Tagdate, measurement=FLmm)
-str(tagsvtrack)
-tagsvtrack$tag_id <- as.character(tagsvtrack$tag_id)
-tagsvtrack$scientific_name <- "Trachinotus falcatus"
-tagsvtrack$common_name <- "permit"
-tagsvtrack$tag_project_name <- "BTTFLK"
-tagsvtrack$release_id <- tagsvtrack$tag_id
-tagsvtrack$tag_status <-"deployed"
-tagsvtrack$sex <-"unknown"
-~~~
-{:.language-r}
+att_dets <- read_otn_detections(det_file)
+att_ani <- read.csv(att_ani_path, as.is = TRUE)
+att_dpl <- read.csv(att_dpl_path, as.is = TRUE)
+att_tag <- read.csv(att_tag_path, as.is = TRUE)
 
-Uses the tag expected life for data periods. I elected to just use the periods between tag deployment and the last detection.
-
-~~~
-Tagperiod <- detsf %>% group_by(FishID) %>% summarise(start=min(UTC),end=max(UTC)) %>% as.data.frame()
-Tagperiod$days <- as.numeric((Tagperiod$end - Tagperiod$start) )
-Tagperiod$days <- as.numeric(round(Tagperiod$days,0))
-
-
-tagsvtrack$tag_expected_life_time_days <- Tagperiod$days[match(tagsvtrack$tag_id, Tagperiod$FishID )]
-
-
-tagsvtrack <- tagsvtrack %>% select(tag_id, transmitter_id, scientific_name, common_name, tag_project_name,
-                              release_id, release_latitude, release_longitude, ReleaseDate, tag_expected_life_time_days,
-                              tag_status, sex, measurement)
-tagsvtrack$ReleaseDate <- as.POSIXct(tagsvtrack$ReleaseDate, tz="US/Eastern",format="%Y-%m-%d %H:%M:%S")
-tagsvtrack$ReleaseDate <- format(tagsvtrack$ReleaseDate, tz="UTC",format="%Y-%m-%d %H:%M:%S")
-tagsvtrack$ReleaseDate <- as.POSIXct(tagsvtrack$ReleaseDate, tz="UTC",format="%Y-%m-%d %H:%M:%S")
-tagsvtrack$transmitter_id <- as.character(tagsvtrack$transmitter_id)
-head(tagsvtrack)
-~~~
-{:.language-r}
-
-Station info:
-
-~~~
-head(Rxdeploy3)
-Rxdeployvtrack <- Rxdeploy3 %>% rename(station_name=station, receiver_name=Receiver, deploymentdatetime_timestamp=deployUTC,
-                                recoverydatetime_timestamp=recoverUTC, station_latitude=lat, station_longitude=lon)
-
-head(Rxdeployvtrack)
-str(Rxdeployvtrack)
-Rxdeployvtrack$installation_name <-"BTTFLK"
-Rxdeployvtrack$project_name <- "BTTFLK"
-Rxdeployvtrack$status <- "deployed"
-
-Rxdeployvtrack <- Rxdeployvtrack %>% select(station_name, receiver_name, installation_name, project_name, deploymentdatetime_timestamp,
-                                recoverydatetime_timestamp, station_latitude, station_longitude, status)
-
-str(detsfvtrack)
-str(tagsvtrack)
-str(Rxdeployvtrack)
-~~~
-{:.language-r}
-
-Data all ready
-
-~~~
-library(VTrack)
-ATTdataBTT <- setupData(Tag.Detections = detsfvtrack, Tag.Metadata = tagsvtrack, Station.Information = Rxdeployvtrack , source="VEMCO")
+  
+att_bluesharks <- glatos::convert_otn_erddap_to_att(att_dets, att_tag, att_dpl, att_ani)
 ~~~
 {:.language-r}
 
@@ -109,13 +37,13 @@ ATTdataBTT <- setupData(Tag.Detections = detsfvtrack, Tag.Metadata = tagsvtrack,
 
 ### Can be used to make an abacus plot:
 ~~~
-abacusPlot(ATTdataBTT)
+abacusPlot(att_bluesharks)
 ~~~
 {:.language-r}
 
 ### Generate detection summary stats:
 ~~~
-detSum<-detectionSummary(ATTdataBTT,
+detSum<-detectionSummary(att_bluesharks,
                          sub = "%Y-%m")
 detSum$Overall
 ~~~
@@ -124,7 +52,7 @@ detSum$Overall
 
 ### Calculate dispersal summary info
 ~~~
-dispSum<-dispersalSummary(ATTdataBTT)
+dispSum<-dispersalSummary(att_bluesharks)
 ~~~
 {:.language-r}
 
@@ -148,7 +76,7 @@ Calculate Centers of Activity ([Simpfendorfer, C. A., M. R. Heupel, and R. E. Hu
 ~~~
 ?COA
 
-COAdata <- COA(ATTdataBTT, timestep=3600, split=TRUE)
+COAdata <- COA(att_bluesharks, timestep=3600, split=TRUE)
 warnings()
 ~~~
 {:.language-r}
