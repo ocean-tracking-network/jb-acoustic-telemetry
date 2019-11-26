@@ -1,6 +1,6 @@
 ---
 title: "Summarising and Plotting Data"
-teaching: 0
+teaching: 45
 exercises: 0
 questions:
 - "What are some of the ways to summarise my data?"

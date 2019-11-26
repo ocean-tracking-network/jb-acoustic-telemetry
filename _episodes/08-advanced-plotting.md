@@ -1,6 +1,6 @@
 ---
 title: "Advanced Plotting"
-teaching: 0
+teaching: 30
 exercises: 0
 questions:
 - "What are some of the options for advanced data visualization?"

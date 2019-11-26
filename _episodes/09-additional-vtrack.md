@@ -1,6 +1,6 @@
 ---
 title: "Additional Interpolation and Plotting with VTrack"
-teaching: 0
+teaching: 30
 exercises: 0
 questions:
 - "How can I use VTrack to further analyse my data?"

@@ -1,6 +1,6 @@
 ---
 title: "Data Analysis Using GLATOS"
-teaching: 0
+teaching: 45
 exercises: 0
 questions:
 - "How does the GLATOS package facilitate data analysis?"
@@ -145,32 +145,6 @@ map <- summary_data %>%
 map  
 ~~~
 {:.language-r}
-
-
-In order to use dets in a meaningful way, we'll need to assign station deployments, metadata, and fish tagging
-info to them.
-
-~~~
-# assign permit tag info to the detections ####
-
-str(dets)
-str(tags)
-
-~~~
-{:.language-r}
-
-Let's assign FishID, tagging date (datetime), and fork length (FLmm) to detections.
-
-We can assign above variables from tags to dets using the merge function:
-
-~~~
-?merge
-dets2 <- merge(dets, tags, by="tagname", all.x=TRUE)
-head(dets2)
-~~~
-{:.language-r}
-
-Now we would have to clean this dataset up quite a bit.
 
 
 ## MapBox
