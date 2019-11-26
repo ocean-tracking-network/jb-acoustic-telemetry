@@ -1,6 +1,6 @@
 ---
 title: "Data Analysis Using GLATOS"
-teaching: 0
+teaching: 45
 exercises: 0
 questions:
 - "How does the GLATOS package facilitate data analysis?"

@@ -1,6 +1,6 @@
 ---
 title: "Matching Detections to Times"
-teaching: 0
+teaching: 15
 exercises: 0
 questions:
 - "What is time matching?"

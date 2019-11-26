@@ -1,6 +1,6 @@
 ---
 title: "Data Manipulation Basics"
-teaching: 0
+teaching: 20
 exercises: 0
 questions:
 - "How do I load data?"
