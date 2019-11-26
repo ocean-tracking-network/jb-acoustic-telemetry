@@ -3,11 +3,13 @@ title: "Additional Interpolation and Plotting with VTrack"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "How can I use VTrack to further analyse my data?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Introduce VTrack and explain what it is for."
+- "Properly configure data for use with VTrack."
+- "Use VTrack to make plots and detection summaries."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "VTrack provides robust options for more advanced visualization."
 ---
 
 [VTrack](https://vinayudyawer.github.io/ATT/docs/ATT_Vignette.html "VTrack Reference") has some cool tools including COA and Brownian bridges.
@@ -67,12 +69,14 @@ The glatos-based detection events above is an intermediate data summary that is 
 receivers. This gives you more info on what the fish were doing in between.
 
 In case you're ever interested in exploring the mechanics behind the functions:
+
 ~~~
 getAnywhere(dispersalSummary)
 ~~~
 {:.language-r}
 
 Calculate Centers of Activity ([Simpfendorfer, C. A., M. R. Heupel, and R. E. Hueter. 2002.](https://doi.org/10.1139/f01-191))
+
 ~~~
 ?COA
 
@@ -83,6 +87,7 @@ warnings()
 
 
 Calculate Minimum Convex Polygons:
+
 ~~~
 library(rgdal)
 proj<-CRS("+proj=longlat +datum=WGS84")
@@ -91,6 +96,7 @@ proj<-CRS("+proj=longlat +datum=WGS84")
 
 HRSummary() requires calculation of COAs first
 Estimate 100% Maximum Convex Polygon (MCP) areas
+
 ~~~
 mcp_est <- HRSummary(COAdata,
                      projCRS=proj,
@@ -103,7 +109,8 @@ mcp_est
 ~~~
 {:.language-r}
 
-Estimate 20%, 50% and 95% Brownian Bridge Kernel Utilisation Distribution ('BBKUD') contour areas and store polygons
+Estimate 20%, 50% and 95% Brownian Bridge Kernel Utilisation Distribution ('BBKUD') contour areas and store polygons:
+
 ~~~
 BBkud_est<-HRSummary(COAdata,
                      projCRS=proj,
@@ -113,7 +120,8 @@ BBkud_est<-HRSummary(COAdata,
 ~~~
 {:.language-r}
 
-Plot
+Plot:
+
 ~~~
 library(raster)
 library(viridis) ## access more color palettes
@@ -121,6 +129,7 @@ library(viridis) ## access more color palettes
 {:.language-r}
 
 Select rasters of full KUDs for each individual into a single list:
+
 ~~~
 fullstack <-
   unlist(BBkud_est$Spatial.Objects)[grep("*_full", names(unlist(BBkud_est$Spatial.Objects)))]
@@ -130,7 +139,8 @@ names(fullstack) <-
 ~~~
 {:.language-r}
 
-Lets plot the overall BBKUD for a given individual
+Lets plot the overall BBKUD for a given individual:
+
 ~~~
 fulltag <- fullstack$`P91`
 values(fulltag)[values(fulltag) > 96] <- NA

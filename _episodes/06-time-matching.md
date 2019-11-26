@@ -3,11 +3,14 @@ title: "Matching Detections to Times"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "What is time matching?"
+- "How do we perform time matching?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Explain time matching."
+- "Step through the process of matching detections with times."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "Time matching links station deployment information to verify that all detections fall within the deployment period."
+- "Generate a dataset for the station info in order to group detections."
 ---
 
 ## Assigning DateTimes to Receivers
@@ -31,6 +34,6 @@ dets_with_stations <- left_join(
 dets_with_stations <- dets_with_stations %>% 
   filter(detection_timestamp_utc >= deploy_date_time, detection_timestamp_utc <= recover_date_time)
 
+
 ~~~
 {:.language-r}
-

@@ -3,11 +3,16 @@ title: "Data Analysis Using GLATOS"
 teaching: 0
 exercises: 0
 questions:
-- "Key question (FIXME)"
+- "How does the GLATOS package facilitate data analysis?"
+- "How does the GLATOS package facilitate data visualization?"
 objectives:
-- "First learning objective. (FIXME)"
+- "Demonstrate how to clean and filter raw data with the GLATOS package."
+- "Show how summarise() can be used to group data."
+- "Demonstrate how grouped data can be plotted."
+- "Demonstrate how grouped data can be plotted on a map."
 keypoints:
-- "First key point. Brief Answer to questions. (FIXME)"
+- "Multiple tools agregated to allow for data ingestion and filtering."
+- "Provides functionality for creating basic plots from GLATOS formatted data."
 ---
 
 ## Data Analysis Using GLATOS
@@ -92,7 +97,7 @@ Plotting is necessary for most research and analysis. It's just an easier way fo
 
 We will be using Plotly, a plotting package that allows for exports and interactivity.
 
-We will create an abacus plot first. An abacus plot will show us a timline of what animal is seen when by the receivers. We put detection_timestamp_utc on the x axis and the animal_id on the y axis.
+We will create an abacus plot first. An abacus plot will show us a timeline of what animal is seen when by the receivers. We put detection_timestamp_utc on the x axis and the animal_id on the y axis.
 
 ~~~
 library(plotly)
@@ -155,6 +160,7 @@ str(tags)
 {:.language-r}
 
 Let's assign FishID, tagging date (datetime), and fork length (FLmm) to detections.
+
 We can assign above variables from tags to dets using the merge function:
 
 ~~~
