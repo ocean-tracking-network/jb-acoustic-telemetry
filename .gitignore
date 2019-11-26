@@ -1,6 +1,7 @@
 .travis.yml
 *.DS_Store
 *.orig
+.Rproj.user
 .jekyll-cache/
 .ruby-version
 _site/

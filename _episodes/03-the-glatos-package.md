@@ -34,15 +34,16 @@ Tag collision resulting in false detection:
 (figs from False Detections: What They Are and How to Remove Them from Detection Data, Pincock 2012)
 
 ~~~
-nr_detections_with_filter <- glatos::false_detections(non_release_detections, tf = 3600)
+dets <- read_otn_detections("detections.csv")
+dets <- glatos::false_detections(dets, tf = 3600)
 ~~~
 {:.language-r}
 
 The result of false_detections() adds a passed_filter column to the table. We can use this column to get only the detections that passed the filter.
 
 ~~~
-filtered_detections <- nr_detections_with_filter %>% filter(passed_filter != FALSE)
-filtered_detections
+dets_filtered <- dets %>% filter(passed_filter != FALSE)
+dets_filtered
 ~~~
 
 {:.language-r}

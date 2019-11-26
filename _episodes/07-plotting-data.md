@@ -19,22 +19,22 @@ keypoints:
 
 We can group our data by animal ID, letting us isolate individuals for summary stats, plotting and further analysis.
 ~~~
-str(dets3)
-FishIDsum <- dets3 %>% group_by(animal_id) %>%
-  summarise(dets=length(animal_id),stations=length(unique(station)), nodes=length(unique(node)),
-            min=min(UTC), max=max(UTC), tracklength=max(UTC)-min(UTC)) %>% as.data.frame()
-FishIDsum
+str(dets_with_stations)
+animal_id_summary <- dets_with_stations %>% group_by(animal_id) %>%
+  summarise(dets=length(animal_id),stations=length(unique(station)),
+            min=min(detection_timestamp_utc), max=max(detection_timestamp_utc), 
+            tracklength=max(detection_timestamp_utc)-min(detection_timestamp_utc)) %>% as.data.frame()
+animal_id_summary
+
 ~~~
 {:.language-r}
-
-
 
 ## Summarise by station:
 
 To group and summarise our data by station, we first need to find all unique station names and locations:
 ~~~
-head(Rxmeta)
-stations <- Rxmeta %>% select(station, lat, lon, depth, sub=sub_detail, hab=hab_detail)
+head(Rxdeploy)
+stations <- Rxdeploy %>% select(station, deploy_date_time, recover_date_time, lat=deploy_lat, lon=deploy_long)
 head(stations)
 ~~~
 {:.language-r}
@@ -43,9 +43,11 @@ head(stations)
 Create a new data product, det_days, that give you the unique dates that an animal was seen by a station. This summary
 can be used to calculate a residence index as in [Kessel et al. 2017](https://dx.doi.org/10.1007/s00300-015-1723-y)
 ~~~
-stationsum <- dets3 %>% group_by(station) %>%
+stationsum <- dets_with_stations %>% group_by(station) %>%
   summarise(detections=length(animal_id),
-            uniqueID=length(unique(animal_id)), det_days=length(unique(as.character(day)))) %>% as.data.frame()
+            start=min(detection_timestamp_utc),
+            end=max(detection_timestamp_utc),
+            uniqueID=length(unique(animal_id)), det_days=length(unique(as.Date(detection_timestamp_utc)))) %>% as.data.frame()
 ~~~
 {:.language-r}
 
@@ -55,65 +57,53 @@ We can then re-attach station summary information to the list of stations we mad
 
 ~~~
 stations2 <- merge(stations, stationsum, all.x=TRUE, by="station")
-stations2[is.na(stations2)]<-0
+stations2 <- stations2 %>% filter(detections > 0) # Filter out stations with no detections
+stations2 <- stations2 %>% filter (deploy_date_time <= start & recover_date_time >= end) %>% select(-start, -end)
 stations2[1:10,]
 ~~~
 {:.language-r}
 
-# How many days were the Receivers in the water?:
-
-Residence Indices often must take into account the number of potential observation days. Using our deployment history,
-we can calculate the number of days the tag and receiver were deployed. The Receiver Efficiency Index (REI) described in
-[Ellis et al. 2019](https://doi.org/10.1016/j.fishres.2018.09.015) is a ratio useful for quantifying the relative importance/value of each receiver in a given array/cloud deployment, and requires similar input data. We can calculate it this way:
-
-~~~
-head(Rxdeploy3)
-Rxdeploy3$deploy_time <- Rxdeploy3$recoverUTC-Rxdeploy3$deployUTC
-Rxdeploysum <- Rxdeploy3 %>% group_by(station) %>% summarise(deploy_time=sum(deploy_time))
-stations2$Rx_deploy_time <- Rxdeploysum$deploy_time[match(stations2$station, Rxdeploysum$station)]
-head(stations2)
-
-#Receiver efficiency index from Ellis et al. (2019) Fisheries Research
-stations2$REI <- (stations2$uniqueID/length(unique(dets3$Transmitter))) * (stations2$det_days/sum(stations2$det_days)) *
-                 (max(stations2$det_days)/stations2$det_days)
-
-stations2$REI[is.na(stations2$REI)]<-0
-stations2$REI <- stations2$REI/max(stations2$REI)*100
-~~~
-{:.language-r}
-
-
-## Station Summary Table Review
-
-Now we have a station summary dataframe with REI scoring and other summary information inline, from which we can derive some plots.
-~~~
-stations2[1:20,]
-~~~
-{:.language-r}
 
 ## Plotting data
 
-Abacus plot:
+Abacus plots:
+
+Simple plots using the glatos library.
+
 ~~~
-# summarise by day to make less computationally intensive:
-head(dets3)
-dets3day <- dets3 %>% group_by(node, day, animal_id) %>% summarise(dets=length(animal_id))
-head(dets3day)
+library(glatos)
 
-# plot
-library(ggplot2)
-?ggplot()
-ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point()
-
-# add tagging datetimes:
-head(tags)
-ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point() +
-  geom_point(data=tags, aes(x=datetimeESTEDT,y=FishID),col="black") +
-  scale_color_brewer()
+glatos::abacus_plot(dets_with_stations, location_col =  "station") # Plot by station
+glatos::abacus_plot(dets_with_stations, location_col =  "animal_id") # Plot by animal
 ~~~
 {:.language-r}
 
+Nicer plots using the ggplot library.
 
+~~~
+library(dplyr)
+library(ggplot2)
+library(viridis)
+
+plot_data <- dets %>% dplyr::select(animal_id, station, detection_timestamp_utc)
+
+abacus_animals <- ggplot(data=plot_data, aes(x=detection_timestamp_utc, y=animal_id, col=station))+
+  geom_point()+
+  ggtitle("Detections by animal")+
+  theme(plot.title = element_text(face="bold", hjust = 0.5))+
+  scale_color_viridis(discrete= TRUE)
+
+abacus_animals
+
+abacus_stations <- ggplot(data=plot_data,  aes(x=detection_timestamp_utc, y=station, col=animal_id))+
+  geom_point()+
+  ggtitle("Detections by station")+
+  theme(plot.title = element_text(face="bold", hjust = 0.5))+
+  scale_color_viridis(discrete= TRUE)
+
+abacus_stations
+~~~
+{:.language-r}
 
 
 ## Spatial Plots:
@@ -121,19 +111,30 @@ ggplot(data=dets3day, aes(x=day, y=animal_id, col=node))+geom_point() +
 Summarise data by station and individual ID, and then plot a map of each animal path.
 
 ~~~
+library(ggmap)
+
 # examine by station and FishID:
-stationFishID <- dets3 %>% group_by(station, animal_id) %>%
-  summarise(lat=mean(lat), lon=mean(lon), dets=length(animal_id), logdets=log(length(animal_id)))
+stationFishID <- dets_with_stations %>% group_by(station, animal_id) %>%
+  summarise(lat=mean(deploy_lat), lon=mean(deploy_long), dets=length(animal_id), logdets=log(length(animal_id)))
 
 # Peek at the first few rows
 head(stationFishID)
 
-perm_map <- ggmap(FLmap, extent='normal')+
-  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+base <- get_stamenmap(
+  bbox = c(
+    left = min(dets_with_stations$deploy_long),
+    bottom = min(dets_with_stations$deploy_lat ), 
+    right = max(dets_with_stations$deploy_long), 
+    top = max(dets_with_stations$deploy_lat)
+  ),
+  maptype = "terrain-background", 
+  crop = FALSE,
+  zoom = 8
+)
+perm_map <- ggmap(base, extent='normal')+
   ylab("Latitude") +
   xlab("Longitude")+
   labs(size="log(detections)")+
-  geom_path(data=dets3, aes(x=lon,y=lat,col=animal_id))+
   geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=animal_id))
 perm_map
 

@@ -18,7 +18,7 @@ keypoints:
 
 ## Data Cleaning and Preprocessing
 
-When analyzing data, 80% of time is spent cleaning and manipulating data and only 20% actually analyzing it. For this reason, it is critical to become familiar with the data cleaning process and getting your data into a format that can be analyzed. Let's begin with reading in our data using GLATOS (which will be explained below).
+When analyzing data, 80% of time is spent cleaning and manipulating data and only 20% actually analyzing it. For this reason, it is critical to become familiar with the data cleaning process and getting your data into a format that can be analyzed. Let's begin with reading in our data using read.csv (which will be explained below).
 
 
 ~~~
@@ -26,7 +26,7 @@ library(dplyr)
 library(stringr)
 options(repr.matrix.max.cols=500)
 
-detections_path <- system.file('extdata', 'blue_shark_detections.csv', package ='glatos')
+detections_path <- file.path('detections.csv')
 data <- read.csv(detections_path)
 data
 ~~~
@@ -35,17 +35,21 @@ data
 Load data.
 This enables collapsing blocks of code using the drop arrow on the left
 
-Acoustic telemetry data are commonly stored in 4 different files:
+
+Acoustic telemetry data are commonly stored in 3 different files:
 1. Detections
-2. Receiver deployment information
+2. Receiver deployment metadata
 3. Receiver metadata
-4. Tagging information
+
 
 ~~~
-dets <- read.csv("detections.csv") #detections from acoustic receivers
-Rxdeploy <- read.csv("Rx_deployments.csv") #receiver station info
-Rxmeta <- read.csv("Rx_metadata.csv") #receiver station info
-tags <- read.csv("tag_info.csv") #tagged fish data
+dets_file = file.path('data', 'detections.csv')
+rcv_file = file.path('data', 'deployments.csv')
+tags_file = file.path('data', 'animal_tags.csv')
+
+dets <- read.csv(dets_file) #detections from acoustic receivers
+Rxdeploy <- read.csv(rcv_file) #receiver station info
+tags <- read.csv(tags_file) #tagged fish data
 ~~~
 {:.language-r}
 
@@ -58,7 +62,6 @@ str(dets)
 dets[1:10,]
 
 head(Rxdeploy)
-head(Rxmeta)
 head(tags)
 ~~~
 {:.language-r}
@@ -66,5 +69,6 @@ head(tags)
 
 Notice the variables and their data type (important - google data types in R if unfamiliar).
 
-Clearly we need to combine the above 4 dataframes in various ways to do anything with these data
+
+Clearly we need to combine the above 3 dataframes in various ways to do anything with these data
 let's grease the wheels and check out fish tagging and receiver locations:
