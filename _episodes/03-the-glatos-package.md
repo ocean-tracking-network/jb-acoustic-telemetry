@@ -34,7 +34,8 @@ Tag collision resulting in false detection:
 (figs from False Detections: What They Are and How to Remove Them from Detection Data, Pincock 2012)
 
 ~~~
-dets <- read_otn_detections("detections.csv")
+dets_file <- file.path('data', 'detections.csv')
+dets <- read_glatos_detections("detections.csv")
 dets <- glatos::false_detections(dets, tf = 3600)
 ~~~
 {:.language-r}

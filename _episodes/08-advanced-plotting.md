@@ -16,8 +16,6 @@ keypoints:
 
 
 ~~~
-head(stations2)
-
 # Add REI to stations2
 rei <- REI(dets_with_stations, Rxdeploy)
 stations2 <- left_join(stations2, rei) %>% select(-latitude, -longitude)
@@ -38,15 +36,15 @@ lat_range <- range(stationFishID$lat) + c(-.5, .5)
 library(plotly)
 
 p <-  ggplot(stations2) +
-  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkgreen") +
+  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkblue") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
   #geom_sf(data = area, fill = 'white') +
   geom_point(data=stations2, aes(lon, lat, size=detections, col=REI))+
   scale_color_continuous(low="yellow", high="red")+
-  coord_sf(xlim = lat_range, ylim = lon_range) +
+  coord_sf(xlim = lon_range, ylim = lat_range) +
   xlab("Longitude")+ ylab("Latitude")+
-  theme(panel.background = element_rect(fill = 'lightblue'),
+  theme(panel.background = element_rect(fill = 'lightgreen'),
         legend.position = 'none')
 
 ggplotly(p)
@@ -65,29 +63,28 @@ library(gganimate)
 library(rnaturalearth)
 library(gifski)
 
-str(dets3)
-dets3$year <- strftime(dets3$UTC, format="%Y")
-dets3$month <- strftime(dets3$UTC, format="%Y-%m")
+dets_with_stations$year <- strftime(dets_with_stations$detection_timestamp_utc, format="%Y")
+dets_with_stations$month <- strftime(dets_with_stations$detection_timestamp_utc, format="%Y-%m")
 
-plot_data <- dets3 %>% filter(year>"2017")
+plot_data <- dets_with_stations %>% filter(year>"2017")
 ~~~
 {:.language-r}
 
 
 ## Plot and animate
 ~~~
-p <- ggplot(dets3) +
-  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkgreen") +
+p <- ggplot(dets_with_stations) +
+  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkblue") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
   #geom_sf(data = area, fill = 'white') +
-  geom_point(data=dets3, aes(lon.x, lat.x, col = catalognumber), size = 3) +
+  geom_point(data=dets_with_stations, aes(deploy_long, deploy_lat, col = animal_id), size = 3) +
   coord_sf(xlim = lon_range, ylim = lat_range) +
   labs(title = '',
        subtitle = 'Date: {format(frame_time, "%d %b %Y")}',
        x = "Longitude", y = "Latitude") +
-  theme(panel.background = element_rect(fill = 'white'))+
-  transition_time(as.POSIXct(datecollected, tz= "UTC", format = "%Y-%m-%d %H:%M"))+
+  theme(panel.background = element_rect(fill = 'lightgreen'))+
+  transition_time(as.POSIXct(detection_timestamp_utc, tz= "UTC", format = "%Y-%m-%d %H:%M"))+
   shadow_wake(wake_length = 0.5, alpha = FALSE)
   
 
