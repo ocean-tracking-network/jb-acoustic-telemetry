@@ -1,6 +1,6 @@
 ---
 title: "Advanced Plotting"
-teaching: 0
+teaching: 30
 exercises: 0
 questions:
 - "What are some of the options for advanced data visualization?"
@@ -16,6 +16,11 @@ keypoints:
 
 
 ~~~
+# Add REI to stations2
+rei <- REI(dets_with_stations, Rxdeploy)
+stations2 <- left_join(stations2, rei) %>% select(-latitude, -longitude)
+stations2 <- stations2 %>% rename(REI=rei)
+
 head(stations2)
 
 lon_range <- range(stationFishID$lon) + c(-10, 10)
@@ -24,18 +29,22 @@ lat_range <- range(stationFishID$lat) + c(-10, 10)
 library(mapdata)
 w <- map_data("worldHires", ylim = lat_range, xlim = lon_range)
 
+# new range to pass to plot for Nova Scotia region
+lon_range <- range(stationFishID$lon) + c(-.5, .5)
+lat_range <- range(stationFishID$lat) + c(-.5, .5)
+
 library(plotly)
 
 p <-  ggplot(stations2) +
-  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkgreen") +
+  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkblue") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
   #geom_sf(data = area, fill = 'white') +
   geom_point(data=stations2, aes(lon, lat, size=detections, col=REI))+
   scale_color_continuous(low="yellow", high="red")+
-  coord_sf(xlim = c(-82.5, -81), ylim = c(24.2, 25.1)) +
+  coord_sf(xlim = lon_range, ylim = lat_range) +
   xlab("Longitude")+ ylab("Latitude")+
-  theme(panel.background = element_rect(fill = 'lightblue'),
+  theme(panel.background = element_rect(fill = 'lightgreen'),
         legend.position = 'none')
 
 ggplotly(p)
@@ -54,33 +63,32 @@ library(gganimate)
 library(rnaturalearth)
 library(gifski)
 
-str(dets3)
-dets3$year <- strftime(dets3$UTC, format="%Y")
-dets3$month <- strftime(dets3$UTC, format="%Y-%m")
+dets_with_stations$year <- strftime(dets_with_stations$detection_timestamp_utc, format="%Y")
+dets_with_stations$month <- strftime(dets_with_stations$detection_timestamp_utc, format="%Y-%m")
 
-plot_data <- dets3 %>% filter(year>"2017")
+plot_data <- dets_with_stations %>% filter(year>"2017")
 ~~~
 {:.language-r}
 
 
 ## Plot and animate
 ~~~
-p <- ggplot(plot_data) +
-  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkgreen") +
+p <- ggplot(dets_with_stations) +
+  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkblue") +
   theme_bw() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
   #geom_sf(data = area, fill = 'white') +
-  geom_point(data=plot_data, aes(lon, lat, col = FishID), size = 2) +
-  coord_sf(xlim = c(-82.5, -81), ylim = c(24.2, 25.1)) +
+  geom_point(data=dets_with_stations, aes(deploy_long, deploy_lat, col = animal_id), size = 3) +
+  coord_sf(xlim = lon_range, ylim = lat_range) +
   labs(title = '',
-       subtitle = 'Date: {format(frame_time, "%b %Y")}',
+       subtitle = 'Date: {format(frame_time, "%d %b %Y")}',
        x = "Longitude", y = "Latitude") +
-  theme(panel.background = element_rect(fill = 'white'),
-        legend.position = 'none')+
-  transition_time(day)+
+  theme(panel.background = element_rect(fill = 'lightgreen'))+
+  transition_time(as.POSIXct(detection_timestamp_utc, tz= "UTC", format = "%Y-%m-%d %H:%M"))+
   shadow_wake(wake_length = 0.5, alpha = FALSE)
+  
 
-pAnim <- animate(p, duration=24, nframes=96)
+pAnim <- animate(p, duration=24, nframes=96, height = 900, width = 900)
 #watch it:
 pAnim
 #save it:

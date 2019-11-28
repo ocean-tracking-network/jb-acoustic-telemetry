@@ -16,8 +16,8 @@ keypoints:
 
 ##  Intro to Telemetry Data Analysis
 
-OTN, FACT and GLATOS all provide researchers with preformatted data sets, which are easily ingested into the data analysis tools.
-Before diving into alot of analysis, it is important to take the time to clean and sort your data set, taking the preformatted files and combining them in different ways, allowing you to analyse the data with different questions in mind.
+OTN, FACT and GLATOS all provide researchers with pre-formatted data sets, which are easily ingested into the data analysis tools.
+Before diving into a lot of analysis, it is important to take the time to clean and sort your data set, taking the pre-formatted files and combining them in different ways, allowing you to analyse the data with different questions in mind.
 There are multiple R packages necessary for efficient and thorough telemetry data analysis.  General packages that allow for data cleaning and arrangement, dataset manipulation and visualization, network analysis and temporo-spatial locating are used in conjuction with the telemetry analysis tool packages VTtrack, ATT and GLATOS.
 
 ##  Intro to the GLATOS Package
