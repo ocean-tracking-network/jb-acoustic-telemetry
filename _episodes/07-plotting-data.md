@@ -151,80 +151,26 @@ dev.off()
 Let's look at maps by FishID to see individual fish movement patterns.
 
 ~~~
-movMap <- ggmap(FLmap, extent='normal')+
-  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
+lat_range <- range(dets_with_stations$deploy_lat) + c(-1, 1)
+lon_range <- range(dets_with_stations$deploy_long) + c(-1, 1)
+
+GLmap <- get_stamenmap(
+  bbox = c(left = lon_range[1],
+    bottom = lat_range[1],
+    right = lon_range[2],
+    top = lat_range[2]),
+  maptype = "terrain", 
+  crop = FALSE,
+  zoom = 6)
+
+movMap <- ggmap(GLmap, extent='normal')+
+  coord_cartesian(xlim=lon_range, ylim=lat_range)+
   ylab("Latitude") +
   xlab("Longitude")+
   labs(size="log(detections)")+
-  geom_path(data=dets3, aes(x=lon,y=lat,col=animal_id))+
+  geom_path(data=dets_with_stations, aes(x=deploy_long, y=deploy_lat, col=animal_id))+
   geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=animal_id))+
   facet_wrap(~animal_id)
 movMap
-~~~
-{:.language-r}
-
-Add the tagging locations to the plot. In order to generate a movement path from
-the tagging location we'll have to bind the tagging locations and detections data sets together on individual ID.
-OTN detection extracts have the tag release information directly in the detection extract.
-
-First, set up dataframes with same variables to combine:
-~~~
-head(dets3)
-head(tags)
-~~~
-{:.language-r}
-
-Then, set up detections for combination:
-
-~~~
-dets4 <- dets3 %>% select(Receiver, Transmitter, FishID, FLmm, UTC, Tagdate, station, lat, lon)
-dets4$tagloc <-"n"
-~~~
-{:.language-r}
-
-Add tag locations:
-
-~~~
-tags2 <- tags
-tags2$tagloc <-"y"
-tags2$Receiver <-""
-tags2$station <-""
-tags2$Tagdate <- tags2$datetimeUTC
-tags2$UTC <- tags2$datetimeUTC
-
-tags2 <- tags2 %>% select(Receiver,Transmitter, FishID, FLmm, UTC, Tagdate, station, lat, lon, tagloc)
-~~~
-{:.language-r}
-
-Check the data before you plot:
-
-~~~
-head(tags2)
-head(dets4)
-~~~
-{:.language-r}
-
-Combine the dataframes:
-
-~~~
-dets5 <- rbind(tags2, dets4)
-#arrange by fishID and time
-dets5 <- dets5 %>% arrange(FishID, UTC)
-head(dets5)
-~~~
-{:.language-r}
-
-Plot the result:
-
-~~~
-ggmap(FLmap, extent='normal')+
-  coord_cartesian(xlim=c(-82.6, -80.5), ylim=c(24.2, 25.4))+
-  ylab("Latitude") +
-  xlab("Longitude")+
-  labs(size="log(detections)")+
-  geom_point(data=stationFishID, aes(x=lon,y=lat,size=logdets,col=FishID))+
-  geom_path(data=dets5, aes(x=lon,y=lat,col=FishID))+
-  geom_point(data=tags, aes(x=lon, y=lat),col="yellow")+
-  facet_wrap(~FishID)
 ~~~
 {:.language-r}

@@ -28,7 +28,7 @@ library(glatos)
 library(stringr)
 
 detections_path <- file.path('data', 'detections.csv')
-detections <- glatos::read_otn_detections(detections_path)
+detections <- glatos::read_glatos_detections(detections_path)
 detections <- detections %>% filter(!stringr::str_detect(unqdetecid, "release"))
 detections <- glatos::false_detections(detections, tf = 3600)
 filtered_detections <- detections %>% filter(passed_filter != FALSE)
@@ -102,7 +102,7 @@ We will create an abacus plot first. An abacus plot will show us a timeline of w
 ~~~
 library(plotly)
 abacus_plot <- filtered_detections %>%
-    filter(str_detect(station, "HFX") & !str_detect(station, "lost")) %>%  # filter out everything not on the halifax line
+    filter(!str_detect(station, "lost")) %>%  # filter out everything that's lost
     plot_ly(x = ~detection_timestamp_utc, y = ~animal_id,type = "scatter",  mode = "markers",text = ~station, marker=list(color = ~deploy_lat, colorscale="Viridis", showscale=TRUE)) # Use the marker argument to color by latitude
 
 abacus_plot
@@ -117,11 +117,15 @@ The scope of the map will determine what boundaries are drawn. You can also chan
 
 ~~~
 geo <- list(
-#   scope = 'north america',
+  #   scope = 'north america',
   showland = TRUE,
   landcolor = toRGB("#7BB992"),
   showocean = TRUE,
   oceancolor = toRGB("#A0AAB4"),
+  showrivers = TRUE,
+  rivercolor = toRGB("#A0AAB4"),
+  showlakes = TRUE,
+  lakecolor = toRGB("#A0AAB4"),
   showcountries = TRUE,
   resolution = 50,
   center = list(lat = ~median(latitude),
@@ -132,14 +136,14 @@ geo <- list(
 
 
 map <- summary_data %>%
-    filter(str_detect(location, "HFX") & !str_detect(location, "lost")) %>%
+    filter(!str_detect(location, "lost")) %>%
     plot_geo(lat = ~latitude, lon = ~longitude, color = ~detection_count, height = 900 )%>%
     add_markers(
         text = ~paste(location, ': ', detection_count,'detections', ' & ', total_residence_time_in_seconds, ' seconds of residence time'),
         hoverinfo = "text",
         size = ~c(detection_count/10)#  + total_residence_time_in_seconds/3600)
     )%>%
-    layout(title = "Detections on the Halifax Line",geo = geo)
+    layout(title = "Detections in the Great Lakes", geo = geo)
 
 
 map  
@@ -163,7 +167,7 @@ From there, we can just call the [plot_mapbox()](https://plot.ly/r/scattermapbox
 
 ~~~
 mapbox <- summary_data %>%
-    filter(str_detect(location, "HFX") & !str_detect(location, "lost")) %>%
+    filter(!str_detect(location, "lost")) %>%
     plot_mapbox(lat = ~latitude, lon = ~longitude, color = ~detection_count , height = 900) %>%
     add_markers(
         text = ~paste(location, ': ', detection_count,'detections', ' & ', total_residence_time_in_seconds, ' seconds of residence time'),

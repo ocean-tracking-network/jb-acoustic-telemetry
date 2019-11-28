@@ -21,8 +21,8 @@ We'll join all the detections to station names, then filter out based on deploy 
 det_file <- file.path('data', 'detections.csv')
 rcv_file <- file.path('data', 'deployments.csv')
 
-dets <- read_otn_detections(det_file)
-Rxdeploy <- read_otn_deployments(rcv_file)
+dets <- read_glatos_detections(det_file)
+Rxdeploy <- read_glatos_receivers(rcv_file)
 
 
 dets_with_stations <- left_join(

@@ -29,9 +29,8 @@ library(plotly)
 We are going to load the sample walleye fish detections from the Great Lakes, filter them, and then compress them.
 
 ~~~
-det_file <- system.file("extdata", "walleye_detections.csv",
-                         package = "glatos")
-detections <- read_glatos_detections(det_file)
+detections_path <- file.path('data', 'detections.csv')
+detections <- read_glatos_detections(detections_path)
 
 detections <- glatos::false_detections(detections, tf = 3600)
 filtered_detections <- detections %>% filter(passed_filter != FALSE)
