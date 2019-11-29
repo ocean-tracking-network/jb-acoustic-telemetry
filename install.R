@@ -30,11 +30,10 @@ install.packages('viridis')
 install.packages('lunar')
 
 install.packages("httr", dependencies = TRUE)
-install.packages('netcdf-dev', dependencies = TRUE)
 install.packages("ncdf4",dependencies = TRUE)
 
 # XTractomatic - match locations in time and space w/ model data via ERDDAP
-devtools::install_github("rmendels/xtractomatic")
+#devtools::install_github("rmendels/xtractomatic")
 
 # VTrack and ATT - Tools for Telemetry Analysis
 devtools::install_github("rossdwyer/VTrack")
