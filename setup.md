@@ -37,6 +37,7 @@ install.packages('rgdal')
 install.packages('raster')
 install.packages('mapdata')
 install.packages('maptools')
+install.packages("mapview")
 install.packages("sf")
 install.packages("rnaturalearth")
 install.packages("plotly")
@@ -54,9 +55,8 @@ install.packages("ncdf4",dependencies = TRUE)
 # XTractomatic - match locations in time and space w/ model data via ERDDAP
 devtools::install_github("rmendels/xtractomatic")
 
-# VTrack and ATT - Tools for Telemetry Analysis
+# VTrack - Tools for Telemetry Analysis
 devtools::install_github("rossdwyer/VTrack")
-devtools::install_github("vinayudyawer/ATT")
 
 # GLATOS - acoustic telemetry package that does filtering, vis, array simulation, etc.
 install.packages('remotes')
