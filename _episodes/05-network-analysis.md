@@ -137,25 +137,3 @@ m
 {:.language-r}
 
 
-
-## Understanding how the network changes over time
-
-Now that we have plotted the full network, lets have a closer look at the data and visualise how the network might change over time
-
-For this lets re-process the data to understand how the nodes and edges change over time
-
-~~~
-
-station.list <-
-  filtered_detections %>% 
-  
-
-
-
-
-
-
-
-
-
-
