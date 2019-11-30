@@ -179,22 +179,8 @@ ggsave(plot = perm_map, file = "Key_permit_map.tiff", units="in", width=15, heig
 Let's look at maps by FishID to see individual fish movement patterns.
 
 ~~~
-lat_range <- range(dets_with_stations$deploy_lat) + c(-1, 1)
-lon_range <- range(dets_with_stations$deploy_long) + c(-1, 1)
-
-GLmap <- 
-  get_stamenmap(
-    bbox = c(left = lon_range[1],
-             bottom = lat_range[1],
-             right = lon_range[2],
-             top = lat_range[2]),
-    maptype = "terrain", 
-    crop = FALSE,
-    zoom = 6)
-
 movMap <- 
-  ggmap(GLmap, extent = 'panel') +
-  coord_cartesian(xlim = lon_range, ylim = lat_range) +
+  ggmap(base, extent = 'panel') +
   ylab("Latitude") +
   xlab("Longitude") +
   labs(size = "log(detections)") +
