@@ -18,6 +18,7 @@ keypoints:
 library(glatos)
 library(sf)
 library(mapview)
+library(plotly)
 
 detection_events <- 
   read_glatos_detections("data/detections.csv") %>% 
@@ -71,14 +72,23 @@ base <-
     crop = F, 
     zoom = 8)
 
-
-walleye.animation <-
+## Plot a static map with movement patterns
+walleye.plot <-
   ggmap(base) +
   geom_point(data = plot_data, aes(x = lon, y = lat, group = animal_id, color = animal_id), size = 2) +
   geom_path(data = plot_data, aes(x = lon, y = lat, group = animal_id, color = animal_id)) +
   labs(title = "Walleye animation",
-       subtitle = 'Date: {format(frame_along, "%d %b %Y")}',
-       x = "Longitude", y = "Latitude", color = "Tag ID") +
+       x = "Longitude", y = "Latitude", color = "Tag ID")
+
+walleye.plot
+
+## Interact with ggmap
+ggplotly(walleye.plot)
+
+## Create an animation using the map
+walleye.animation <-
+  walleye.plot +
+  labs(subtitle = 'Date: {format(frame_along, "%d %b %Y")}') +
   transition_reveal(timestep) +
   shadow_mark(past = T, future = F)
 
