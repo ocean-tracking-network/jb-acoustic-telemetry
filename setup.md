@@ -36,6 +36,7 @@ install.packages('ncdf4', dependencies = TRUE)
 # Mapping spatial data
 install.packages('mapdata')
 install.packages('maptools')
+install.packages('leaflet')
 install.packages('mapview')
 install.packages('ggmap')
 install.packages('rnaturalearth')
