@@ -171,6 +171,39 @@ map
 {:.language-r}
 
 
+## MapBox
+Mapbox is a Live Location Platform that can serve up map tiles for use.
+
+You can create a free account and get an access token [at the Mapbox site](https://mapbox.com, "Mapbox Home Page")
+
+Below we set the access token as an environment variable that Plotly can call.
+
+~~~
+Sys.setenv('MAPBOX_TOKEN' = 'your token here')
+~~~
+{:.language-r}
+
+From there, we can just call the [plot_mapbox()](https://plot.ly/r/scattermapbox/, "Plot_Mapbox reference") function and pass whatever arguments we need for the map.
+
+~~~
+mapbox <- summary_data %>%
+    filter(!str_detect(location, "lost")) %>%
+    plot_mapbox(lat = ~latitude, lon = ~longitude, color = ~detection_count , height = 900) %>%
+    add_markers(
+        text = ~paste(location, ': ', detection_count,'detections', ' & ', total_residence_time_in_seconds, ' seconds of residence time'),
+        hoverinfo = "text",
+        size = ~c(detection_count/10  + total_residence_time_in_seconds/3600)
+    )%>%
+    layout( mapbox = list(zoom = 7,
+                           center = list(lat = ~median(latitude),
+                                         lon = ~median(longitude))
+    ))
+
+mapbox
+~~~
+{:.language-r}
+
+
 ## Mapview
 
 Lets replicate this using the `mapview` package
