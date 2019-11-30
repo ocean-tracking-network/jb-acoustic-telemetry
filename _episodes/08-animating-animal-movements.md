@@ -12,72 +12,81 @@ keypoints:
 - "gganimate can be used to create an animated plot."
 ---
 
-## Exploring your dataset with an interactive map
-
+## Setup your data and explore it with a quick interactive map
 
 ~~~
-det_file <- file.path('data', 'detections.csv')
-rcv_file <- file.path('data', 'deployments.csv')
+library(glatos)
+library(sf)
+library(mapview)
 
-dets <- read_glatos_detections(det_file)
-Rxdeploy <- read_glatos_receivers(rcv_file)
+detection_events <- 
+  read_glatos_detections("data/detections.csv") %>% 
+  false_detections(tf = 3600) %>% 
+  filter(passed_filter != FALSE) %>% 
+  detection_events(location_col = 'station')
 
+receivers <-
+  read_glatos_receivers("data/deployments.csv")
 
-dets_with_stations <- left_join(
-  dets %>% rename(
-    deploy_long_det = deploy_long,
-    deploy_lat_det = deploy_lat
-  ), 
-  Rxdeploy, by=c("station"))
-dets_with_stations <- dets_with_stations %>% 
-  filter(detection_timestamp_utc >= deploy_date_time, detection_timestamp_utc <= recover_date_time)
+## Combine detection and reciever datasets into a single combined data frame
+combined_data <- 
+  detection_events %>% 
+  left_join(receivers, by = c("location" = "station")) %>% 
+  filter(first_detection >= deploy_date_time, first_detection <= recover_date_time)
 
-
+## Plot your combined dataset 
+combined_data %>% 
+  group_by(animal_id, location, deploy_lat, deploy_long) %>% 
+  summarise(Num.Det = n()) %>% 
+  st_as_sf(coords = c("deploy_long", "deploy_lat"), crs = 4326) %>% 
+  mapview(zcol = "animal_id", cex = "Num.Det", burst = T, legend = F)
+  
 ~~~
 {:.language-r}
 
 
-## Animations using gganimate
+## Animations using ggmap and gganimate
 
 We're going to animate individual animal paths, using the gganimate package
-First, subset the data (here as an example, filtering using a time-range to get everything after 2017).
 
 ~~~
-library(sf)
 library(gganimate)
-library(rnaturalearth)
-library(gifski)
+library(ggmap)
 
-dets_with_stations$year <- strftime(dets_with_stations$detection_timestamp_utc, format="%Y")
-dets_with_stations$month <- strftime(dets_with_stations$detection_timestamp_utc, format="%Y-%m")
-
-plot_data <- dets_with_stations %>% filter(year>"2012")
-~~~
-{:.language-r}
-
-
-## Plot and animate
-~~~
-p <- 
-  ggplot(dets_with_stations) +
-  geom_polygon(data = w, aes(x = long, y = lat, group = group), fill = "darkblue") +
-  theme_bw() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
-  #geom_sf(data = area, fill = 'white') +
-  geom_point(data=dets_with_stations, aes(deploy_long, deploy_lat, col = animal_id), size = 3) +
-  coord_sf(xlim = lon_range, ylim = lat_range) +
-  labs(title = '',
-       subtitle = 'Date: {format(frame_time, "%d %b %Y")}',
-       x = "Longitude", y = "Latitude") +
-  theme(panel.background = element_rect(fill = 'lightgreen'))+
-  transition_time(as.POSIXct(detection_timestamp_utc, tz= "UTC", format = "%Y-%m-%d %H:%M"))+
-  shadow_wake(wake_length = 0.5, alpha = FALSE)
+plot_data <-
+  combined_data %>% 
+  mutate(timestep = round_date(first_detection, unit = "1 days")) %>% 
+  group_by(timestep, animal_id) %>% 
+  summarise(lon = mean(deploy_long),
+            lat = mean(deploy_lat))
   
+## Lets setup the base map
+base <- 
+  get_stamenmap(
+    bbox = c(left = min(plot_data$lon),
+             bottom = min(plot_data$lat), 
+             right = max(plot_data$lon), 
+             top = max(plot_data$lat)),
+    maptype = "toner-lite",
+    crop = F, 
+    zoom = 8)
 
-pAnim <- animate(p, duration=24, nframes=96, height = 900, width = 900)
-#watch it:
-pAnim
-#save it:
-anim_save("pAnim.gif")
+
+walleye.animation <-
+  ggmap(base) +
+  geom_point(data = plot_data, aes(x = lon, y = lat, group = animal_id, color = animal_id), size = 2) +
+  geom_path(data = plot_data, aes(x = lon, y = lat, group = animal_id, color = animal_id)) +
+  labs(title = "Walleye animation",
+       subtitle = 'Date: {format(frame_along, "%d %b %Y")}',
+       x = "Longitude", y = "Latitude", color = "Tag ID") +
+  transition_reveal(timestep) +
+  shadow_mark(past = T, future = F)
+
+# Watch it:
+walleye.animation
+
+# Save it:
+anim_save(walleye.animation, filename = "walleye_animation.gif")
+
 ~~~
 {:.language-r}
