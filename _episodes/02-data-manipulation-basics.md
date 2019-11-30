@@ -48,7 +48,7 @@ This enables collapsing blocks of code using the drop arrow on the left
 Acoustic telemetry data are commonly stored in 3 different files:
 1. Detections
 2. Receiver deployment metadata
-3. Receiver metadata
+3. Tag metadata
 
 
 ~~~
