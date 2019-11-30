@@ -109,20 +109,20 @@ plot_data <-
   dplyr::select(animal_id, station, detection_timestamp_utc)
 
 abacus_animals <- 
-  ggplot(data=plot_data, aes(x=detection_timestamp_utc, y=animal_id, col=station))+
-  geom_point()+
-  ggtitle("Detections by animal")+
-  theme(plot.title = element_text(face="bold", hjust = 0.5))+
-  scale_color_viridis(discrete= TRUE)
+  ggplot(data = plot_data, aes(x = detection_timestamp_utc, y = animal_id, col = station)) +
+  geom_point() +
+  ggtitle("Detections by animal") +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5)) +
+  scale_color_viridis(discrete = TRUE)
 
 abacus_animals
 
 abacus_stations <- 
-  ggplot(data=plot_data,  aes(x=detection_timestamp_utc, y=station, col=animal_id))+
-  geom_point()+
-  ggtitle("Detections by station")+
-  theme(plot.title = element_text(face="bold", hjust = 0.5))+
-  scale_color_viridis(discrete= TRUE)
+  ggplot(data = plot_data,  aes(x = detection_timestamp_utc, y = station, col = animal_id)) +
+  geom_point() +
+  ggtitle("Detections by station") +
+  theme(plot.title = element_text(face = "bold", hjust = 0.5)) +
+  scale_color_viridis(discrete = TRUE)
 
 abacus_stations
 ~~~
