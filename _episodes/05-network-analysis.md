@@ -20,7 +20,7 @@ Network Analysis, based in graph theory, provides a means to easily interpret an
 Pull in the necessary libraries:
 
 ~~~
-library(dplyr)
+library(tidyverse)
 library(glatos)
 library(plotly)  
 ~~~
@@ -42,12 +42,13 @@ Below we create 2 data frames. One to create the network edges and the other to 
 
 ~~~
 # create a data frame of directed movements
-network_analysis_data <- detection_events %>%
+network_analysis_data <- 
+  detection_events %>%
   arrange(first_detection) %>% # Arrange in sequential order by time of arrival
   group_by(animal_id) %>% # Group the data  animal
-  mutate(to = lead(location)) %>% # Create a next location column by using the lead
-  mutate(to_latitude = lead(mean_latitude)) %>%  # Create a next latitude column by using the lead
-  mutate(to_longitude = lead(mean_longitude)) %>% # Create a next longitude column by using the lead
+  mutate(to = lead(location), # Create a next location column by using the lead
+         to_latitude = lead(mean_latitude),  # Create a next latitude column by using the lead
+         to_longitude = lead(mean_longitude)) %>% # Create a next longitude column by using the lead
   group_by(location, to) %>% # Group by unique sets of movements/vertices
   summarise(visits = n(),
             latitude = mean(mean_latitude),
