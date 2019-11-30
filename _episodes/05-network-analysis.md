@@ -61,7 +61,8 @@ network_analysis_data <-
   na.omit() # Omit any rows with empty values
 
 # Create a data frame of receiver vertices.
-receivers <- network_analysis_data %>%
+receivers <- 
+  network_analysis_data %>%
   group_by(from) %>%
   summarise(
       latitude = mean(latitude),
@@ -77,7 +78,8 @@ Below we plot out the segments and vertices using plotly.
 ~~~
 Sys.setenv('MAPBOX_TOKEN' = 'your toke here')
 
-network <- network_analysis_data %>%
+network <- 
+    network_analysis_data %>%
     plot_mapbox(height=800) %>%
     add_segments(
         x = ~longitude, xend = ~to_longitude,
@@ -101,3 +103,59 @@ network <- network_analysis_data %>%
 network  
 ~~~
 {:.language-r}
+
+
+Lets recreate this using the `mapview` package. Here we will use a package called `leaflet.minicharts` that help plot the directionality and weights in edges of the network.
+
+~~~
+library(mapview)
+library(leaflet.minicharts)
+library(sf)
+
+# First lets create a basemap with all the residence times at each receivers mapped
+basemap <-
+  receivers %>% 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% 
+  mapview(color.regions = "white",
+          cex = "visits",
+          alpha = 0,
+          homebutton = F,
+          legend = F)
+
+m <-
+  basemap@map %>% 
+  addFlows(lng0 = network_analysis_data$longitude,
+           lat0 = network_analysis_data$latitude,
+           lng1 = network_analysis_data$to_longitude,
+           lat1 = network_analysis_data$to_latitude,
+           flow = network_analysis_data$visits,
+           color = "black",
+           opacity = 0.8)
+
+m
+~~~
+{:.language-r}
+
+
+
+## Understanding how the network changes over time
+
+Now that we have plotted the full network, lets have a closer look at the data and visualise how the network might change over time
+
+For this lets re-process the data to understand how the nodes and edges change over time
+
+~~~
+
+station.list <-
+  filtered_detections %>% 
+  
+
+
+
+
+
+
+
+
+
+
