@@ -92,7 +92,7 @@ summary_data <-
     detection_events %>% 
     group_by(location) %>% 
     summarise(detection_count = sum(num_detections),
-              num_unique_tags = n_distinct(individual),
+              num_unique_tags = n_distinct(animal_id),
               total_residence_time_in_seconds = sum(detection_interval),
               latitude = mean(mean_latitude),
               longitude = mean(mean_longitude))  
