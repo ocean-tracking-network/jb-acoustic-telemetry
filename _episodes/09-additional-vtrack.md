@@ -185,11 +185,11 @@ COAmap
 {:.language-r}
 
 
-Once COA estimates are estimated we can calculate activity space metrics:
+Once COA are estimated we can calculate activity space metrics:
 
 Lets calculate Minimum Convex Polygons
 
-We first need to define the projected coordinate reference system to convert lat/lon coordinates to meters. This will help estimate activity space in the scale that is most useful. Projected coordinate systems should signify distance in meters so the output area values are in sq meters.
+We first need to define the projected coordinate reference system to convert lat/lon coordinates to meters. This will help estimate activity space in the unit that is most useful. Projected coordinate systems should signify distance in meters so the output area values are in sq meters.
 
 ~~~
 library(sp)
@@ -237,9 +237,17 @@ BBkud_est <- HRSummary(COAdata,
                      h = 200,
                      type = "BBKUD",
                      cont = c(20,50,95),
-                     storepoly = TRUE)
+                     storepoly = TRUE,
+                     sub = "%Y-%W")
                      
 summary(BBkud_est)
+
+# Overall Brownian bridge UD estimates for full tagging period
+BBkud_est$Overall
+
+# Weekly Brownian bridge UD estimates for the three tagged walleye
+BBkud_est$Subsetted
+
 ~~~
 {:.language-r}
 
