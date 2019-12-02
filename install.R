@@ -1,40 +1,40 @@
 install.packages("devtools")
 
 # Tidyverse (data cleaning and arrangement)
-install.packages('tidyverse')
+#install.packages('tidyverse')
 
 # Concise way to manipulate large datasets
-install.packages('data.table')
+#install.packages('data.table')
 
 # Geospatial Data Manipulation and Vis Packages
-install.packages('geosphere')
-install.packages('rgdal')
-install.packages('raster')
-install.packages('sf')
-install.packages('sp', dependencies = TRUE)
-install.packages('ncdf4', dependencies = TRUE)
+#install.packages('geosphere')
+#install.packages('rgdal')
+#install.packages('raster')
+#install.packages('sf')
+#install.packages('sp', dependencies = TRUE)
+#install.packages('ncdf4', dependencies = TRUE)
 
 # Mapping spatial data
-install.packages('mapdata')
-install.packages('maptools')
-install.packages('leaflet')
-install.packages('mapview')
-install.packages('ggmap')
-install.packages('rnaturalearth')
-install.packages('plotly')
+#install.packages('mapdata')
+#install.packages('maptools')
+#install.packages('leaflet')
+#install.packages('mapview')
+#install.packages('ggmap')
+#install.packages('rnaturalearth')
+#install.packages('plotly')
 
 # Animating spatial data
-install.packages('gganimate')
-install.packages('gifski')
+#install.packages('gganimate')
+#install.packages('gifski')
 
 # Network analysis
-install.packages('igraph')
-install.packages('leaflet.minicharts')
+#install.packages('igraph')
+#install.packages('leaflet.minicharts')
 
 # Other misscelaneous packages to help
-install.packages('viridis')
-install.packages('lunar')
-install.packages('httr', dependencies = TRUE)
+#install.packages('viridis')
+#install.packages('lunar')
+#install.packages('httr', dependencies = TRUE)
 
 # XTractomatic - match locations in time and space w/ model data via ERDDAP
 #devtools::install_github("rmendels/xtractomatic")
