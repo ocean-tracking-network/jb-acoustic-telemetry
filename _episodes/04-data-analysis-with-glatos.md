@@ -150,8 +150,8 @@ geo <- list(
   resolution = 50,
   center = list(lat = ~median(latitude),
                 lon = ~median(longitude)),
-  lonaxis = list(range=c(~min(longitude)-1, ~max(longitude)+1)),
-  lataxis = list(range=c(~min(latitude)-1, ~max(latitude)+1))
+  lonaxis = list(range=c(~min(longitude) - 4, ~max(longitude) + 4)),
+  lataxis = list(range=c(~min(latitude) - 4, ~max(latitude) + 4))
 )
 
 

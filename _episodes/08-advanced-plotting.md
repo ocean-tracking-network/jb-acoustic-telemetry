@@ -27,7 +27,7 @@ lon_range <- range(stationFishID$lon) + c(-10, 10)
 lat_range <- range(stationFishID$lat) + c(-10, 10)
 
 library(mapdata)
-w <- map_data("worldHires", ylim = lat_range, xlim = lon_range)
+w <- map_data("lakes", ylim = lat_range, xlim = lon_range)
 
 # new range to pass to plot for Nova Scotia region
 lon_range <- range(stationFishID$lon) + c(-.5, .5)

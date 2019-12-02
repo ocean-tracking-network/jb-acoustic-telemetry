@@ -95,7 +95,7 @@ As you can see, there are a few options to change the background map, including 
 We can also present more information in this map and interactively group points based on data attributes
 
 
-~~
+~~~
 
 mapview(rec_sf, 
         zcol = "glatos_project",
