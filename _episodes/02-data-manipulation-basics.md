@@ -25,7 +25,14 @@ Reading in data can be done using the `read_csv` function that automatically rec
 ~~~
 library(tidyverse)
 
-data <- read_csv("data/detections.csv")
+# We need to define these as the first 1000 rows don't have any data so read_csv thinks they are logicals
+col_specs <- cols( 
+  sensor_value = col_character(),
+  sensor_unit = col_character(),
+  glatos_caught_date = col_date()
+)
+
+data <- read_csv("data/detections.csv",  col_types = col_specs)
 data
 ~~~
 {: .language-r}
@@ -56,7 +63,7 @@ dets_file <- file.path('data', 'detections.csv')
 rcv_file <- file.path('data', 'deployments.csv')
 tags_file <- file.path('data', 'animal_tags.csv')
 
-dets <- read_csv(dets_file) #detections from acoustic receivers
+dets <- read_csv(dets_file, col_types = col_specs) #detections from acoustic receivers
 Rxdeploy <- read_csv(rcv_file) #receiver station info
 tags <- read_csv(tags_file) #tagged fish data
 ~~~
