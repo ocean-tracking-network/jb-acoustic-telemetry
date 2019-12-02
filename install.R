@@ -46,7 +46,7 @@ install.packages("devtools")
 #install.packages('remotes')
 #library(remotes)
 #install_url("https://gitlab.oceantrack.org/GreatLakes/glatos/repository/master/archive.zip",
-            build_opts = c("--no-resave-data", "--no-manual"))
+#            build_opts = c("--no-resave-data", "--no-manual"))
 
 # Sensible Working Directory Manager
 #install.packages("here")
