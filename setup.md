@@ -20,43 +20,46 @@ Open RStudio and run this install script. It's best to run it line by line inste
 install.packages("devtools")
 
 # Tidyverse (data cleaning and arrangement)
-install.packages('ggplot2')
-install.packages('ggmap')
-install.packages('dplyr')
-install.packages('gganimate')
+install.packages('tidyverse')
 
-# animated GIF encoder
-install.packages("gifski")
-
-# Concise way to manipulate datasets
-install.packages("data.table")
+# Concise way to manipulate large datasets
+install.packages('data.table')
 
 # Geospatial Data Manipulation and Vis Packages
 install.packages('geosphere')
 install.packages('rgdal')
 install.packages('raster')
+install.packages('sf')
+install.packages('sp', dependencies = TRUE)
+install.packages('ncdf4', dependencies = TRUE)
+
+# Mapping spatial data
 install.packages('mapdata')
 install.packages('maptools')
-install.packages("sf")
-install.packages("rnaturalearth")
-install.packages("plotly")
-install.packages("sp", dependencies = TRUE)
+install.packages('leaflet')
+install.packages('mapview')
+install.packages('ggmap')
+install.packages('rnaturalearth')
+install.packages('plotly')
+
+# Animating spatial data
+install.packages('gganimate')
+install.packages('gifski')
 
 # Network analysis
 install.packages('igraph')
+install.packages('leaflet.minicharts')
 
+# Other misscelaneous packages to help
 install.packages('viridis')
 install.packages('lunar')
-
-install.packages("httr", dependencies = TRUE)
-install.packages("ncdf4",dependencies = TRUE)
+install.packages('httr', dependencies = TRUE)
 
 # XTractomatic - match locations in time and space w/ model data via ERDDAP
 devtools::install_github("rmendels/xtractomatic")
 
-# VTrack and ATT - Tools for Telemetry Analysis
+# VTrack - Tools for Telemetry Analysis
 devtools::install_github("rossdwyer/VTrack")
-devtools::install_github("vinayudyawer/ATT")
 
 # GLATOS - acoustic telemetry package that does filtering, vis, array simulation, etc.
 install.packages('remotes')

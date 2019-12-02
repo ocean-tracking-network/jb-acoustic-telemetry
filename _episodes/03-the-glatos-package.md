@@ -34,15 +34,19 @@ Tag collision resulting in false detection:
 (figs from False Detections: What They Are and How to Remove Them from Detection Data, Pincock 2012)
 
 ~~~
+library(glatos)
+
 dets_file <- file.path('data', 'detections.csv')
-dets <- read_glatos_detections("detections.csv")
-dets <- glatos::false_detections(dets, tf = 3600)
+dets <- read_glatos_detections(dets_file)
+dets <- false_detections(dets, tf = 3600)
 ~~~
 {:.language-r}
 
 The result of false_detections() adds a passed_filter column to the table. We can use this column to get only the detections that passed the filter.
 
 ~~~
+library(tidyverse)
+
 dets_filtered <- dets %>% filter(passed_filter != FALSE)
 dets_filtered
 ~~~
