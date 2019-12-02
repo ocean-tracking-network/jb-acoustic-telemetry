@@ -20,7 +20,7 @@ The primary object `VTrack` uses is called an ATT object. This object houses the
 
 1. Detections
 2. Receiver deployment metadata
-3. Receiver metadata
+3. Tag metadata
 
 Apart from these datasets, the ATT object also stores information on the Geographic Coordinate Reference System for that dataset. GLATOS is capable of exporting OTN data to a format readable by VTrack. Conversion of OTN data requires data from the [OTN ERDDAP server](https://members.oceantrack.org/erddap/tabledap/index.html?page=1&itemsPerPage=1000) Data can be found at the following links: [Animals](https://members.oceantrack.org/erddap/tabledap/otn_aat_animals.html), [Receivers](https://members.oceantrack.org/erddap/tabledap/otn_aat_receivers.html), and [Tag Releases](https://members.oceantrack.org/erddap/tabledap/otn_aat_tag_releases.html).
 
