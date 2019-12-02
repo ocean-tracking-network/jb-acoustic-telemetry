@@ -23,30 +23,35 @@ Basically, the point is to turn data into information and information into knowl
 First, clean and filter the data:
 
 ~~~
-library(dplyr)
+library(tidyverse)
 library(glatos)
-library(stringr)
+
 
 detections_path <- file.path('data', 'detections.csv')
 detections <- glatos::read_glatos_detections(detections_path)
-detections <- detections %>% filter(!stringr::str_detect(unqdetecid, "release"))
+
 detections <- glatos::false_detections(detections, tf = 3600)
 filtered_detections <- detections %>% filter(passed_filter != FALSE)
 
 detection_events <- glatos::detection_events(filtered_detections, location_col = 'station')
-detection_events  # Time Series Analysis & Lubridate
+detection_events  
 ~~~
 {:.language-r}
 
-Time series show the when, the before, and the after for data points. The [Lubridate](https://lubridate.tidyverse.org "Lubridiate Homepage") package is especially useful for handling time calculations.
+## Time Series Analysis & lubridate
+
+Time series show the when, the before, and the after for data points. The [lubridate](https://lubridate.tidyverse.org "Lubridiate Homepage") package is especially useful for handling time calculations.
 
 Date-time data can be frustrating to work with in R. R commands for date-times are generally unintuitive and change depending on the type of date-time object being used. Moreover, the methods we use with date-times must be robust to time zones, leap days, daylight savings times, and other time related quirks, and R lacks these capabilities in some situations. Lubridate makes it easier to do the things R does with date-times and possible to do the things R does not.
 
 ~~~
 library(lubridate)
-detection_events <- detection_events %>% mutate(detection_interval = lubridate::interval(first_detection, last_detection))
 
-# detection_events  
+detection_events <- 
+    detection_events %>% 
+    mutate(detection_interval = lubridate::interval(first_detection, last_detection))
+
+detection_events
 ~~~
 {:.language-r}
 
@@ -70,7 +75,9 @@ detection_events
 We can then filter based on whether or not the overlaps_with string is empty
 
 ~~~
-detection_events %>% select(-one_of("detection_interval")) %>% filter(detection_events$overlaps_with != '')  
+detection_events %>% 
+    select(-one_of("detection_interval")) %>% 
+    filter(detection_events$overlaps_with != '')  
 ~~~
 {:.language-r}
 
@@ -81,11 +88,14 @@ Summarise is a useful function implemented to create a new data frame from runni
 summarise() is typically used on grouped data created by group_by(). The output will have one row for each group.
 
 ~~~
-summary_data <- detection_events %>% group_by(location) %>% summarise(detection_count = sum(num_detections),
-                                                                      num_unique_tags = n_distinct(animal_id),
-                                                                      total_residence_time_in_seconds = sum(detection_interval),
-                                                                      latitude = mean(mean_latitude),
-                                                                      longitude = mean(mean_longitude))  
+summary_data <- 
+    detection_events %>% 
+    group_by(location) %>% 
+    summarise(detection_count = sum(num_detections),
+              num_unique_tags = n_distinct(animal_id),
+              total_residence_time_in_seconds = sum(detection_interval),
+              latitude = mean(mean_latitude),
+              longitude = mean(mean_longitude))  
 
 summary_data
 ~~~
@@ -101,11 +111,21 @@ We will create an abacus plot first. An abacus plot will show us a timeline of w
 
 ~~~
 library(plotly)
-abacus_plot <- filtered_detections %>%
-    filter(!str_detect(station, "lost")) %>%  # filter out everything that's lost
-    plot_ly(x = ~detection_timestamp_utc, y = ~animal_id,type = "scatter",  mode = "markers",text = ~station, marker=list(color = ~deploy_lat, colorscale="Viridis", showscale=TRUE)) # Use the marker argument to color by latitude
 
+abacus_plot <-
+    filtered_detections %>% 
+    filter(!str_detect(station, "lost")) %>% 
+    ggplot(aes(x = detection_timestamp_utc, y = animal_id, color = deploy_lat)) +
+    geom_point() +
+    ylab("Animal ID") + xlab("Date") + labs(color = "Detection latitude") +
+    theme_minimal()
+
+## Static plot
 abacus_plot
+
+## Interactive plot using plotly
+ggplotly(abacus_plot)
+
 ~~~
 {:.language-r}
 
@@ -130,8 +150,8 @@ geo <- list(
   resolution = 50,
   center = list(lat = ~median(latitude),
                 lon = ~median(longitude)),
-  lonaxis = list(range=c(~min(longitude)-1, ~max(longitude)+1)),
-  lataxis = list(range=c(~min(latitude)-1, ~max(latitude)+1))
+  lonaxis = list(range=c(~min(longitude) - 4, ~max(longitude) + 4)),
+  lataxis = list(range=c(~min(latitude) - 4, ~max(latitude) + 4))
 )
 
 
@@ -182,3 +202,25 @@ mapbox <- summary_data %>%
 mapbox
 ~~~
 {:.language-r}
+
+
+## Mapview
+
+Lets replicate this using the `mapview` package
+
+~~~
+library(mapview)
+library(sf)
+
+map <-
+  summary_data %>% 
+  filter(!str_detect(location, "lost")) %>% 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% 
+  mapview(zcol = "detection_count", cex = "detection_count")  
+    
+map
+~~~
+{:.language-r}
+
+
+
