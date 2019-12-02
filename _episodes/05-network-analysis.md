@@ -20,7 +20,7 @@ Network Analysis, based in graph theory, provides a means to easily interpret an
 Pull in the necessary libraries:
 
 ~~~
-library(dplyr)
+library(tidyverse)
 library(glatos)
 library(plotly)  
 ~~~
@@ -42,12 +42,13 @@ Below we create 2 data frames. One to create the network edges and the other to 
 
 ~~~
 # create a data frame of directed movements
-network_analysis_data <- detection_events %>%
+network_analysis_data <- 
+  detection_events %>%
   arrange(first_detection) %>% # Arrange in sequential order by time of arrival
   group_by(animal_id) %>% # Group the data  animal
-  mutate(to = lead(location)) %>% # Create a next location column by using the lead
-  mutate(to_latitude = lead(mean_latitude)) %>%  # Create a next latitude column by using the lead
-  mutate(to_longitude = lead(mean_longitude)) %>% # Create a next longitude column by using the lead
+  mutate(to = lead(location), # Create a next location column by using the lead
+         to_latitude = lead(mean_latitude),  # Create a next latitude column by using the lead
+         to_longitude = lead(mean_longitude)) %>% # Create a next longitude column by using the lead
   group_by(location, to) %>% # Group by unique sets of movements/vertices
   summarise(visits = n(),
             latitude = mean(mean_latitude),
@@ -60,7 +61,8 @@ network_analysis_data <- detection_events %>%
   na.omit() # Omit any rows with empty values
 
 # Create a data frame of receiver vertices.
-receivers <- network_analysis_data %>%
+receivers <- 
+  network_analysis_data %>%
   group_by(from) %>%
   summarise(
       latitude = mean(latitude),
@@ -76,7 +78,8 @@ Below we plot out the segments and vertices using plotly.
 ~~~
 Sys.setenv('MAPBOX_TOKEN' = 'your toke here')
 
-network <- network_analysis_data %>%
+network <- 
+    network_analysis_data %>%
     plot_mapbox(height=800) %>%
     add_segments(
         x = ~longitude, xend = ~to_longitude,
@@ -100,3 +103,37 @@ network <- network_analysis_data %>%
 network  
 ~~~
 {:.language-r}
+
+
+Lets recreate this using the `mapview` package. Here we will use a package called `leaflet.minicharts` that help plot the directionality and weights in edges of the network.
+
+~~~
+library(mapview)
+library(leaflet.minicharts)
+library(sf)
+
+# First lets create a basemap with all the residence times at each receivers mapped
+basemap <-
+  receivers %>% 
+  st_as_sf(coords = c("longitude", "latitude"), crs = 4326) %>% 
+  mapview(color.regions = "white",
+          cex = "visits",
+          alpha = 0,
+          homebutton = F,
+          legend = F)
+
+m <-
+  basemap@map %>% 
+  addFlows(lng0 = network_analysis_data$longitude,
+           lat0 = network_analysis_data$latitude,
+           lng1 = network_analysis_data$to_longitude,
+           lat1 = network_analysis_data$to_latitude,
+           flow = network_analysis_data$visits,
+           color = "black",
+           opacity = 0.8)
+
+m
+~~~
+{:.language-r}
+
+
