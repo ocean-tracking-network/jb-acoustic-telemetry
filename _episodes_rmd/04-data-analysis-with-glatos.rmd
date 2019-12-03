@@ -1,0 +1,165 @@
+---
+title: "Compressing Detections into Detection Events for Faster Analysis"
+author: "Ryan Gosse"
+date: "Dec 3, 2019"
+output: html_document
+---
+## Compressing Detections into Detection Events for Faster Analysis
+
+Sometimes detection files are difficult to run through complicated algorithms because of their sheer size. A method of summarizing the detection data is to compress these raw detections into events, a single row record for each animal presence at a station over a time period.
+
+```{r message=FALSE}
+library(tidyverse)
+library(glatos)
+```
+```{r}
+
+detections_path <- file.path('../data', 'detections.csv')
+detections <- glatos::read_glatos_detections(detections_path)
+
+# Filter our detections first
+detections <- glatos::false_detections(detections, tf = 3600)
+filtered_detections <- detections %>% filter(passed_filter != FALSE)
+
+# And create a new detection_events data set from the filtered detections.
+detection_events <- glatos::detection_events(filtered_detections, location_col = 'station')
+head(detection_events)  
+```
+
+```{r}
+# Let's make our detection intervals, 
+# the time period between the first and last detection at a station, 
+# into an object called a date-interval. This lets you perform time-based math and some other handy logic
+library(lubridate, verbose = FALSE, warn.conflicts = FALSE)
+
+detection_events <- 
+    detection_events %>% 
+    mutate(detection_interval = lubridate::interval(first_detection, last_detection))
+
+head(detection_events)
+```
+
+```{r detection_events}
+# Let's find overlapping events, that is, times that two animals were co-located at a station.
+# We'll add the overlapping records for any row to a new column for that row, called overlaps_with
+
+for(event in detection_events$event) {
+    detection_events$overlaps_with[event] = paste( # We use paste to create a string of other events
+        which(detection_events$location == detection_events$location[event] &  # Make sure that the location is the same
+            detection_events$event != event &  # Make sure the event is not the same
+            lubridate::int_overlaps(detection_events$detection_interval[event], detection_events$detection_interval) 
+            # We can use lubridate's int_overlaps function to find the overlapping events
+        ),
+        collapse=",")
+}
+
+head(detection_events) 
+```
+
+```{r}
+# Now that we've got our overlapping detection events, let's see which ones overlap with others
+
+detection_events %>% 
+    select(-one_of("detection_interval")) %>% 
+    filter(detection_events$overlaps_with != '') %>%
+    head()
+```
+
+```{r}
+# Our detection events dataframe is also a useful intermediary dataset for creating summaries of animal 
+# presence per station. This also shows you how well you can read a dplyr pipeline to see what you're doing
+# to the data, provided you name things in readable ways.
+
+summary_data <- 
+    detection_events %>% 
+    group_by(location) %>%                              # Here we group our detection events by location, 
+    summarise(detection_count = sum(num_detections),    # do a total tally of the raw detections
+              num_unique_tags = n_distinct(animal_id),  # count the number of unique animals at each location, 
+              total_residence_time_in_seconds = sum(detection_interval),  # sum up the total time of the intervals
+              latitude = mean(mean_latitude),           # and for datasets that cross receiver deployment histories, 
+              longitude = mean(mean_longitude))         # average the lat/lon of each deployment per station.
+
+head(summary_data)
+```
+
+## Plot.ly 
+Plotly is a library for creating interactive plots, but you can also coerce it into making static plots. It has implementations in R, Python and Javascript, and it's one of many options for creating customized, interactive/static plots of all kinds. It's got fairly good documentation at https://plot.ly/r and we'll go over some of the functionality here while we use it to introspect our data visually.
+
+```{r}
+
+library(plotly, verbose = FALSE, warn.conflicts = FALSE)
+
+# Like the standard abacus plot, for example:
+abacus_plot <-
+    filtered_detections %>% 
+    filter(!str_detect(station, "lost")) %>% 
+    ggplot(aes(x = detection_timestamp_utc, y = animal_id, color = deploy_lat)) +
+    geom_point(size=5) +
+    ylab("Animal ID") + xlab("Date") + labs(color = "Detection latitude") +
+    theme_minimal(base_size = 20, base_family = "", base_rect_size = 60)
+
+#Jupyter Notebook users: use this to resize your plot.
+#options(repr.plot.width=20, repr.plot.height=10)
+## Show our static plot
+abacus_plot
+```
+
+```{r abacus_plot}
+ggplotly(abacus_plot)
+```
+
+```{r}
+geo <- list(
+  #   scope = 'north america',
+  showland = TRUE,
+  landcolor = toRGB("#7BB992"),
+  showocean = TRUE,
+  oceancolor = toRGB("#A0AAB4"),
+  showrivers = TRUE,
+  rivercolor = toRGB("#A0AAB4"),
+  showlakes = TRUE,
+  lakecolor = toRGB("#A0AAB4"),
+  showcountries = TRUE,
+  resolution = 50,
+  center = list(lat = ~median(latitude),
+                lon = ~median(longitude)),
+  lonaxis = list(range=c(~min(longitude) - 4, ~max(longitude) + 4)),
+  lataxis = list(range=c(~min(latitude) - 4, ~max(latitude) + 4))
+)
+```
+
+```{r geo, summary_data}
+map <- summary_data %>%
+    filter(!str_detect(location, "lost")) %>%
+    plot_geo(lat = ~latitude, lon = ~longitude, color = ~detection_count, height = 900 )%>%
+    add_markers(
+        text = ~paste(location, ': ', detection_count,'detections', ' & ', total_residence_time_in_seconds, ' seconds of residence time'),
+        hoverinfo = "text",
+        size = ~c(detection_count/10)#  + total_residence_time_in_seconds/3600)
+    )%>%
+    layout(title = "Detections in the Great Lakes", geo = geo)
+
+
+map  
+```
+
+```{r echo=FALSE}
+Sys.setenv('MAPBOX_TOKEN' = 'Your token here')
+```
+
+```{r}
+mapbox <- summary_data %>%
+  filter(!str_detect(location, "lost")) %>%
+  plot_mapbox(lat = ~latitude, lon = ~longitude, color = ~detection_count , height = 900) %>%
+  add_markers(
+    text = ~paste(location, ': ', detection_count,'detections', ' & ', total_residence_time_in_seconds, ' seconds of residence time'),
+    hoverinfo = "text",
+    size = ~c(detection_count/10  + total_residence_time_in_seconds/3600)
+  )%>%
+  layout( mapbox = list(zoom = 7,
+                        center = list(lat = ~median(latitude),
+                                      lon = ~median(longitude))
+  ))
+
+mapbox
+```

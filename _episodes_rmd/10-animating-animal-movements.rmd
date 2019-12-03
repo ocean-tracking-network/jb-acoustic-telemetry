@@ -1,0 +1,101 @@
+---
+title: "Animating Animal Movements"
+author: "Ryan Gosse"
+date: "Dec 3, 2019"
+output: html_document
+---
+```{r message=FALSE}
+library(glatos)
+library(sf)
+library(mapview)
+library(plotly)
+library(tidyverse)
+```
+
+```{r}
+det_path <- file.path("..", "data", "detections.csv")
+
+detection_events <- 
+  read_glatos_detections(det_path) %>% 
+  false_detections(tf = 3600) %>% 
+  filter(passed_filter != FALSE) %>% 
+  detection_events(location_col = 'station')
+```
+
+```{r}
+rx_file <- file.path("..", "data", "deployments.csv")
+
+receivers <-
+  read_glatos_receivers(rx_file)
+```
+
+```{r detection_events, receivers}
+## Combine detection and reciever datasets into a single combined data frame
+combined_data <- 
+  detection_events %>% 
+  left_join(receivers, by = c("location" = "station")) %>% 
+  filter(first_detection >= deploy_date_time, first_detection <= recover_date_time)
+
+head(combined_data)
+```
+
+```{r combined_data}
+## Plot your combined dataset 
+combined_sf_data <- combined_data %>% 
+  group_by(animal_id, location, deploy_lat, deploy_long) %>% 
+  summarise(Num.Det = n()) %>% 
+  st_as_sf(coords = c("deploy_long", "deploy_lat"), crs = 4326) %>% 
+  mapview(zcol = "animal_id", cex = "Num.Det", burst = T, legend = F)
+
+combined_sf_data
+```
+
+```{r message=FALSE}
+library(gganimate)
+library(ggmap)
+library(lubridate)
+```
+
+```{r}
+plot_data <-
+  combined_data %>% 
+  mutate(timestep = round_date(first_detection, unit = "1 days")) %>% 
+  group_by(timestep, animal_id) %>% 
+  summarise(lon = mean(deploy_long),
+            lat = mean(deploy_lat))
+```
+
+```{r plot_data, message=FALSE, results='hide'}
+base <- 
+  get_stamenmap(
+    bbox = c(left = min(plot_data$lon),
+             bottom = min(plot_data$lat), 
+             right = max(plot_data$lon), 
+             top = max(plot_data$lat)),
+    maptype = "toner-lite",
+    crop = F, 
+    zoom = 8)
+```
+
+```{r base}
+walleye.plot <-
+  ggmap(base) +
+  geom_point(data = plot_data, aes(x = lon, y = lat, group = animal_id, color = animal_id), size = 2) +
+  geom_path(data = plot_data, aes(x = lon, y = lat, group = animal_id, color = animal_id)) +
+  labs(title = "Walleye animation",
+       x = "Longitude", y = "Latitude", color = "Tag ID")
+
+walleye.plot
+```
+
+```{r walleye.plot}
+ggplotly(walleye.plot)
+```
+
+```{r}
+walleye.animation <-
+  walleye.plot +
+  labs(subtitle = 'Date: {format(frame_along, "%d %b %Y")}') +
+  transition_reveal(timestep) +
+  shadow_mark(past = T, future = F)
+```
