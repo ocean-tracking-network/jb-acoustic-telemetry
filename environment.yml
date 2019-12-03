@@ -1,0 +1,6 @@
+name: jbat-binder
+channels:
+  - conda-forge
+dependencies:
+  - netcdf4
+  - r-rgdal
