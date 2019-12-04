@@ -1,0 +1,49 @@
+---
+title: "Working With Spatial Data"
+author: "Ryan Gosse"
+date: "Dec 3, 2019"
+output: html_document
+---
+```{r message=FALSE}
+library(tidyverse)
+library(sf)
+library(readr)
+library(mapview)
+```
+
+```{r message=FALSE}
+Rxdeploy <- read_csv("../data/deployments.csv") #receiver station info
+
+head(Rxdeploy)
+```
+
+```{r Rxdeploy}
+rec_sf <-
+  Rxdeploy %>% 
+  st_as_sf(coords = c("deploy_long", "deploy_lat")) ## specify which columns contain the longitude and latitude data
+
+head(rec_sf)
+
+plot(rec_sf["glatos_array"])
+```
+
+```{r}
+rec_sf <-
+  Rxdeploy %>% 
+  st_as_sf(coords = c("deploy_long", "deploy_lat"),
+           crs = 4326)    ## specify your epsg code in the crs parameter 
+
+rec_sf
+
+plot(rec_sf["glatos_array"])
+```
+
+```{r rec_sf}
+mapview(rec_sf)
+```
+
+```{r}
+mapview(rec_sf, 
+        zcol = "glatos_project",
+        burst = TRUE)
+```
