@@ -6,11 +6,18 @@ output: html_document
 ---
 ## The GLATOS package
 
-`glatos` is an R package with functions useful to members of the Great Lakes Acoustic Telemetry Observation System (http://glatos.glos.us). Functions may be generally useful for processing, analyzing, simulating, and visualizing acoustic telemetry data, but are not strictly limited to acoustic telemetry applications.
+`glatos` is an R package built with functions useful to members of the Great Lakes Acoustic Telemetry Observation System (http://glatos.glos.us), and also for the broader acoustic telemetry community. Functions may be generally useful for processing, analyzing, simulating, and visualizing acoustic telemetry data, but are not strictly limited to acoustic telemetry applications.
 
 Follow and contribute to the development of the `glatos` package at its repository: https://gitlab.oceantrack.org/GreatLakes/glatos
 
 ```{r message=FALSE}
+
+# Installing the glatos package. If you've already got GLATOS installed, skip this part!
+install.packages('remotes')
+library(remotes)
+install_url("https://gitlab.oceantrack.org/GreatLakes/glatos/repository/master/archive.zip", build_opts = c("--no-resave-data", "--no-manual"))
+
+
 library(glatos)
 library(tidyverse)
 
@@ -18,12 +25,13 @@ dets_file <- file.path('../data', 'detections.csv')
 dets <- read_glatos_detections(dets_file)
 dets <- false_detections(dets, tf = 3600)
 ```
+
 ```{r dets, echo=FALSE}
 dets <- false_detections(dets, tf = 3600)
 ```
 ## Parse GLATOS results with dplyr
 
-Now that we've got our filtered dataframe, let's bring back our Tidyverse tools and peek at what's in our output dataframe:
+Now that we've got our filter flags, let's bring back our Tidyverse tools and subset only the rows that passed the filter, and then take a peek at what's left in our output dataframe:
 
 ``` {r}
 dets_filtered <- dets %>% filter(passed_filter != FALSE)

@@ -10,6 +10,7 @@ output: html_document
 First, we'll review a few Tidyverse-style shortcuts for opening and reviewing the contents of a tabular data file, using acoustic detections, receiver deployment information, and tag release datasets as our examples.
 
 ```{r message=FALSE}
+# install.packages('tidyverse')
 library(tidyverse)
 ```
 
@@ -88,6 +89,7 @@ Fetch the full set of unique values for a column using the `unique()` function.
 ```{r}
 unique(dets$animal_id)
 ```
+
 We will then filter out all the receivers that are not associated with any detections using the min and max of detection_timestamp_utc.
 
 ```{r}
@@ -108,7 +110,7 @@ if (nrow(dets) != nrow(dets_with_stations)) {
 }
 ```
 
-Now we can do some summaries.
+And some station summaries
 
 ```{r dets_with_stations}
 summarised_by_animal_station <- dets_with_stations %>%
@@ -124,7 +126,7 @@ summarise_by_array <- dets_with_stations %>%
 summarise_by_array
 ```
 
-We will create a summary of detections by animal and month. We will need to create a new column to keep track of month and year.
+We can create a summary of detections by animal and month. We will need to create a new column to keep track of month and year.
 
 ```{r}
 dets_with_stations <- dets_with_stations %>%
