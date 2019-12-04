@@ -17,7 +17,9 @@ install.packages('remotes')
 library(remotes)
 install_url("https://gitlab.oceantrack.org/GreatLakes/glatos/repository/master/archive.zip", build_opts = c("--no-resave-data", "--no-manual"))
 
+```
 
+```{r_dets, echo=FALSE}
 library(glatos)
 library(tidyverse)
 
@@ -29,6 +31,7 @@ dets <- false_detections(dets, tf = 3600)
 ```{r dets, echo=FALSE}
 dets <- false_detections(dets, tf = 3600)
 ```
+
 ## Parse GLATOS results with dplyr
 
 Now that we've got our filter flags, let's bring back our Tidyverse tools and subset only the rows that passed the filter, and then take a peek at what's left in our output dataframe:
