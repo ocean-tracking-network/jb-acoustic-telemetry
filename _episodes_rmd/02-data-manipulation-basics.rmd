@@ -1,0 +1,140 @@
+---
+title: "Data Manipulation Basics"
+author: "Ryan Gosse"
+date: "Dec 3, 2019"
+output: html_document
+---
+
+
+## Data Manipulation Basics
+First, we'll review a few Tidyverse-style shortcuts for opening and reviewing the contents of a tabular data file, using acoustic detections, receiver deployment information, and tag release datasets as our examples.
+
+```{r message=FALSE}
+# install.packages('tidyverse')
+library(tidyverse)
+```
+
+First, we'll open up a (GLATOS-style) detection file. Some of our detections are of sensor tags, and to avoid trouble later with mixed-type variables, we will be explicit about these irregular columns and what type we want them to be when we bring in our file.
+
+```{r}
+library(readr)
+col_specs <- cols( 
+  sensor_value = col_character(),
+  sensor_unit = col_character(),
+  glatos_caught_date = col_date()
+)
+
+# Take a look at the data 
+data <- read_csv("../data/detections.csv",  col_types = col_specs)
+data
+```
+
+## Setting up our dataframes
+Here we'll set the file path and name for each of the files we want to open, and then pass those to read_csv and store our three datasets in separate variables. For the source files we didn't specify column types for, R gives us a breakdown of how it treated each column when it ingested them.
+
+```{r message=FALSE}
+dets_file <- file.path('../data', 'detections.csv')
+rcv_file <- file.path('../data', 'deployments.csv')
+tags_file <- file.path('../data', 'animal_tags.csv')
+
+dets <- read_csv(dets_file, col_types = col_specs) # detections from acoustic receivers
+Rxdeploy <- read_csv(rcv_file) # receiver station info
+tags <- read_csv(tags_file) # tagged fish data
+```
+
+Columns that are blank are cast to 'logical' by default. If you have sparsely populated columns in your dataset, or you're joining multiple data frames together, and some have data in these columns while others do not, you may not want them cast that way at all. In that case, you could use the code above to explicitly tell R how to treat these columns, even if they're empty sometimes.
+
+```{r dets}
+# Peek at the first few rows of data in the detections file
+head(dets)
+```
+
+```{r}
+# Peek at the last few rows of data
+tail(dets)
+```
+
+`str()` gives you a detailed list of the size of the dataframe, the factors of each column, and their type, and a peek at the first few values.
+
+```{r}
+str(dets)
+```
+
+GLATOS data files give you a lot of animal morphology information joined to the detection events by default. In FACT-style data outputs, you'll have to join this data in from your tag details.
+
+```{r}
+# You can also zero-in on rows by their index using ranges. Specify your by [firstrow:lastrow,firstcolumn:lastcolumn]
+dets[1:10,]
+```
+
+```{r}
+# You can also zero-in on rows by their index using ranges. Specify your by [firstrow:lastrow,firstcolumn:lastcolumn]
+dets[1:10,]
+```
+
+Review the other two component datasets for this project. 
+Are there any variables you'd want to cast to different types?
+
+```{r Rxdeploy}
+head(Rxdeploy)
+```
+
+```{r tags}
+head(tags)
+```
+
+## More ways of summarizing the data
+Fetch the full set of unique values for a column using the `unique()` function.
+
+```{r}
+unique(dets$animal_id)
+```
+
+We will then filter out all the receivers that are not associated with any detections using the min and max of detection_timestamp_utc.
+
+```{r}
+filtered_rx <- Rxdeploy %>% 
+    filter(deploy_date_time >= min(dets$detection_timestamp_utc),
+           recover_date_time <= max(dets$detection_timestamp_utc))
+```
+
+Now we can do some summaries.
+
+```{r filtered_rx}
+dets_with_stations <- left_join(dets, filtered_rx)
+
+if (nrow(dets) != nrow(dets_with_stations)) {
+    print("Datasets are not equal in length")
+} else {
+    print("Datasets are equal in length")
+}
+```
+
+And some station summaries
+
+```{r dets_with_stations}
+summarised_by_animal_station <- dets_with_stations %>%
+    group_by(animal_id, station) %>%
+    summarise(number.of.detections=n())
+summarised_by_animal_station
+```
+
+```{r}
+summarise_by_array <- dets_with_stations %>%
+    group_by(glatos_array) %>%
+    summarise(number.of.detections=n())
+summarise_by_array
+```
+
+We can create a summary of detections by animal and month. We will need to create a new column to keep track of month and year.
+
+```{r}
+dets_with_stations <- dets_with_stations %>%
+    mutate(
+        month=strftime(detection_timestamp_utc, format="%Y-%m"))
+
+summarise_by_month <- dets_with_stations %>%
+    group_by(animal_id, month) %>%
+    summarise(number.of.detections=n())
+summarise_by_month
+```
