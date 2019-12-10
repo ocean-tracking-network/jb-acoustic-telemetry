@@ -15,10 +15,10 @@ keypoints:
 - "Provides functionality for creating basic plots from GLATOS formatted data."
 ---
 
-## GLATOS File Formatting versus OTN File Formatting
+## GLATOS Workbooks versus OTN Detection Extracts
 Before we begin, we need to know if the data you plan to import is in the GLATOS format, or the OTN format. Both are acceptable for this lesson, but we use different functions to import them. Fortunately, it's easy to determine what format your data is in.
 
-The difference lies in the names and types of columns in the file. We can check which format the data is in, therefore, by inspecting the file itself. We could inspect the file by opening the raw .csv and looking at the column headers, but some software, notably Microsoft Excel, can corrupt data like dates and times and render your file unusable. It's safer, and just as quick, to inspect the file with R.
+These two files contain similar information, but the difference between them lies in the names and types of columns in the file. We can check which format the data is in, therefore, by inspecting the file itself. We could inspect the file by opening the raw .csv and looking at the column headers, but some software, notably Microsoft Excel, can corrupt data like dates and times and render your file unusable. It's safer, and just as quick, to inspect the file with R.
 
 We can inspect your data using the same techniques covered in [episode 2](/02-data-manipulation-basics.md "Episode 02: Data Manipulation Basics"). First, import your data with `read_csv`, then use `head()` to print out the first few rows:
 
